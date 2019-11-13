@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>轨迹回放</title>
+    <script type="text/javascript" src="./jquery.min.js"></script>
+
+    <link rel="stylesheet" href="https://js.arcgis.com/3.27/esri/css/esri.css">
+    <link rel="stylesheet" href="https://js.arcgis.com/3.27/dijit/themes/tundra/tundra.css">
+
+    <script src="https://js.arcgis.com/3.27/init.js"></script>
+
+
+
+
+
+    <style>
+        html, body {
+            display: block;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        * {
+            font-size: 14px;
+            font-family: "微软雅黑";
+            color: #333;
+            outline: none;
+        }
+
+        #mapDiv {
+            width: 100%;
+            height: 100%;
+        }
+
+        #legendDiv {
+            background-color: #fff;
+            position: absolute !important;
+            z-index: 99;
+            top: 10px;
+            right: 120px;
+        }
+
+        .btns {
+            position: absolute;
+            top: 10px;
+            left: 15px;
+            background: #fff;
+            widht: 200px;
+            height: 30px;
+            padding: 5px 8px;
+        }
+
+        .btns input {
+            border: none;
+            background: blue;
+            color: #fff;
+            font-weight: bold;
+            width: 80px;
+            height: 28px;
+            line-height: 28px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .btns .act {
+            background: #f00;
+        }
+    </style>
+</head>
+<body>
+<div id="mapDiv"></div>
+<div class="btns">
+    <input id="Button1" type="button" value="定位"/>
+    <input id="Button2" type="button" value="回放"/>
+</div>
+<script type="text/javascript">
+    require(["esri/map",
+        "esri/layers/ArcGISTiledMapServiceLayer",
+        "esri/geometry/Extent",
+        "esri/geometry/Point",
+        "esri/SpatialReference",
+        "esri/geometry/webMercatorUtils",
+    ], function (Map, ArcGISTiledMapServiceLayer, Extent, Point, SpatialReference, webMercatorUtils) {
+        var globalSR = new SpatialReference(4326);
+        //初始化地图
+        var map = new Map("mapDiv", {
+            center: [116.7483362341, 36.5528927553],
+            zoom: 16,
+
+            showLabels: true,
+            logo: false,
+            slider: false,
+            spatialReference: globalSR,
+            extent: new Extent({spatialReference: globalSR}),
+            wrapAround180: true,
+            geographicExtent: new Extent({spatialReference: globalSR}),
+        });
+        var layer = new ArcGISTiledMapServiceLayer("http://services.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer");
+        map.addLayer(layer);
+
+        var layer1 = esri.layers.GraphicsLayer();
+        map.addLayer(layer1);
+
+        var isPos = false;
+        var posList = [];
+
+        map.on('click', function (event) {
+            if (!isPos) return false;
+            var point = event.mapPoint;
+            var geometry = webMercatorUtils.webMercatorToGeographic(point);
+            var lng = geometry.x;
+            var lat = geometry.y;
+
+            //画点
+            var symbol = new esri.symbol.PictureMarkerSymbol('./dw1.png', 35, 45);
+            symbol.setOffset(10, 12.5);
+
+            var point = new Point(lng, lat);
+
+            var graphic = new esri.Graphic(point, symbol);
+
+            layer1.add(graphic);
+
+
+
+
+
+            var date = new Date();
+            var hour = date.getHours();
+            var minute = date.getMinutes();
+            var second = date.getSeconds();
+            var name = hour + ":" + minute + ":" + second;
+            posList.push({lng: lng, lat: lat, name: name});
+        });
+
+        var lineLayer;
+        var carLayer;
+        var carSymbol;
+        var carurl = "./car.png";
+        ;
+
+        lineLayer = new esri.layers.GraphicsLayer("lineLayer");
+        map.addLayer(lineLayer);
+
+        carLayer = new esri.layers.GraphicsLayer("carLayer");
+        map.addLayer(carLayer);
+
+        carSymbol = new esri.symbol.PictureMarkerSymbol(carurl, 55, 36);
+
+        var playTimer;
+        var timer;
+
+        function trajRun(posList, isLine) {
+            var speed = 10;
+            var speed2 = 40;
+            var carIndex = 0;
+
+            lineLayer.clear();
+            carLayer.clear();
+            if (timer) clearTimeout(timer);
+            if (playTimer) clearTimeout(playTimer);
+
+            //划线
+            function drowPolyline() {
+                //清除之前绘制
+                lineLayer.clear();
+                var path = [];
+                for (var i = 0, len = posList.length; i < len; i++) {
+                    var point = [posList[i].lng, posList[i].lat];
+                    path.push(point);
+                }
+
+                // 生成绘制的图形
+                var polylineJson = {
+                    "paths": [path],
+                    "spatialReference": {"wkid": 4326}
+                };
+                var polyline = new esri.geometry.Polyline(polylineJson);
+                var graphic = new esri.Graphic({
+                    "geometry": polyline,
+                    "symbol": {
+                        "color": [0, 0, 0, 0],
+                        "outline": {
+                            "color": [255, 0, 0, 255],
+                            "width": 2,
+                            "type": "esriSLS",
+                            "style": "esriSLSSolid"
+                        },
+                        "type": "esriSFS",
+                        "style": "esriSFSSolid"
+                    }
+                });
+                lineLayer.add(graphic);
+            }
+
+            /**
+             * 图片运动
+             */
+            var index = 0;
+            var intvaltime = 0;
+
+            function runStart() {
+                if (posList.length == 0) {
+                    return false;
+                }
+                if (timer) clearTimeout(timer);
+                timer = setTimeout(function () {
+                    if (index == posList.length - 1) {
+                        if (timer) clearTimeout(timer);
+                    } else {
+                        var p1 = changePosXY(posList[index]);
+                        var p2 = changePosXY(posList[++index]);
+                        var tempPoints = interpolation(p1, p2, speed);
+                        var angle = Math.ceil(Angle(p1.x, p1.y, p2.x, p2.y))
+                        carSymbol.setAngle(angle)   //设置小车角度
+                        console.log(angle);
+                        if (Math.abs(angle) >= 80 && Math.abs(angle) <= 100) {
+                            if (angle < 0) {
+                                carSymbol.setOffset(-17.5, 0);
+                            } else {
+                                carSymbol.setOffset(17.5, 0);
+                            }
+                        } else if (Math.abs(angle) >= 90) {
+                            carSymbol.setOffset(0, -18);
+                        } else {
+                            carSymbol.setOffset(0, 18);
+                        }
+                        carIndex = 0;
+                        play(tempPoints);
+
+                        intvaltime = tempPoints.length * speed2;
+                        if (index < posList.length - 1) {
+                            runStart();
+                        }
+                    }
+                }, intvaltime);
+            }
+
+            /**
+             *经纬度转墨卡托
+             */
+            function changePosXY(pt) {
+                var lnglat = webMercatorUtils.lngLatToXY(pt.lng, pt.lat);
+                return {x: lnglat[0], y: lnglat[1]};
+            }
+
+            /**
+             *墨卡托转经纬度
+             */
+            function changePosPoint(pt) {
+                var lnglat = webMercatorUtils.xyToLngLat(pt.x, pt.y);
+                return {lng: lnglat[0], lat: lnglat[1]};
+            }
+
+            /**
+             * 根据回放速度在两点之间进行插值
+             */
+            function interpolation(pointA, pointB, speed) {
+                var tmp = [];
+                if (speed == undefined) {
+                    speed = 2;
+                }
+                var count = Math.abs(speed);
+
+                var x1 = Math.abs(pointB.x - pointA.x);
+                var y1 = Math.abs(pointB.y - pointA.y);
+                var z1 = Math.sqrt(x1 * x1 + y1 * y1);
+                count = z1 / count;
+
+                var disX = (pointB.x - pointA.x) / count;
+                var disY = (pointB.y - pointA.y) / count;
+                var i = 0;
+                while (i <= count) {
+                    var x = pointA.x + i * disX;
+                    var y = pointA.y + i * disY;
+                    tmp.push({x: x, y: y});
+                    i++;
+                }
+                tmp.push(pointB);//防止插值出来的最后一个点到不了B点
+                return tmp;
+            }
+
+            /*
+            *计算图片的角度
+             */
+            function Angle(startx, starty, endx, endy) {
+                var tan = 0
+                if (endx == startx) {
+                    tan = Math.atan(0) * 180 / Math.PI
+                } else {
+                    tan = Math.atan(Math.abs((endy - starty) / (endx - startx))) * 180 / Math.PI;
+                }
+
+                if (endx >= startx && endy >= starty)//第一象限
+                {
+                    return -tan;
+                } else if (endx > startx && endy < starty)//第四象限
+                {
+                    return tan;
+                } else if (endx < startx && endy > starty)//第二象限
+                {
+                    return tan - 180;
+                } else {
+                    return 180 - tan;  //第三象限
+                }
+            }
+
+            /**
+             * 播放
+             */
+            function play(tmpPoints) {
+                if (playTimer) clearTimeout(playTimer);
+                playTimer = setTimeout(function () {
+                    if (carIndex < tmpPoints.length - 1) {
+                        carLayer.clear();
+                        var point = changePosPoint(tmpPoints[carIndex + 1]);
+                        point = new Point(point.lng, point.lat);
+                        var carGriphic = new esri.Graphic(point, carSymbol);
+                        carLayer.add(carGriphic);
+                        carIndex++;
+                        play(tmpPoints);
+                    } else {
+                        carIndex = 0;
+                        clearTimeout(playTimer);
+                    }
+                }, speed2);
+            }
+
+            if (isLine) {
+                drowPolyline();
+            }
+            runStart();
+        };
+
+        $("#Button1").click(function () {
+            isPos = !isPos;
+            if (isPos) {
+                posList = [];
+                $(this).addClass('act').val("确定");
+            } else {
+                $(this).removeClass('act').val("定位");
+            }
+        })
+
+        $("#Button2").click(function () {
+            if (posList.length > 0) {
+                trajRun(posList, true);
+            }
+        });
+    });
+</script>
+</body>
+</html>

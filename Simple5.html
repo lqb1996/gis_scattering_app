@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no"/>
+    <title>Simple Map</title>
+    <link rel="stylesheet" href="https://js.arcgis.com/3.27/esri/css/esri.css">
+    <link rel="stylesheet" href="https://js.arcgis.com/3.27/dijit/themes/tundra/tundra.css">
+    <script src="https://js.arcgis.com/3.27/"></script>
+    <style>
+        html, body, #map {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            background-color: #FFF;
+            overflow: hidden;
+            font-family: "Trebuchet MS";
+        }
+    </style>
+    <script>
+
+        var path = [
+            {"id":1,  "x":120.49357,  "y":44.883323, "radius":100000},
+            {"id":2,  "x":117.9872,   "y":42.350326, "radius":80000},
+            {"id":3,  "x":115.545833, "y":39.79259,  "radius":120000},
+            {"id":4,  "x":113.508521, "y":38.274465, "radius":40000},
+            {"id":5,  "x":110.551524, "y":37.151942, "radius":150000},
+            {"id":6, "x":105.640902,  "y":39.126654, "radius":170000},
+            {"id":7, "x":106.005868,  "y":38.125725, "radius":160000},
+            {"id":8, "x":107.545122,  "y":34.951701, "radius":130000},
+            {"id":9, "x":110.411982,  "y":31.777678, "radius":150000},
+            {"id":10, "x":113.019257, "y":28.194103, "radius":130000},
+            {"id":11, "x":116.535467, "y":26.871059, "radius":110000},
+            {"id":12, "x":117.470083, "y":23.943192, "radius":100000}];
+        var map, clickLayer,sr;
+        var index = 0,t=0;
+        require([
+                "esri/map",
+                "esri/layers/ArcGISTiledMapServiceLayer",
+                "esri/layers/GraphicsLayer",
+                "esri/symbols/PictureMarkerSymbol",
+                "esri/symbols/SimpleLineSymbol", //简单线符号
+                "esri/symbols/SimpleMarkerSymbol",
+                "esri/symbols/SimpleFillSymbol",
+                "esri/geometry/Circle",
+                "esri/geometry/Polyline",
+                "esri/graphic",
+                "dojo/_base/Color",
+                "esri/geometry/Point",
+                "dojo/on",
+                "dojo/dom",
+                "dojo/domReady!"],
+            function(Map,
+                     ArcGISTiledMapServiceLayer,
+                     GraphicsLayer,
+                     PictureMarkerSymbol,
+                     SimpleLineSymbol,
+                     SimpleMarkerSymbol,
+                     SimpleFillSymbol,
+                     Circle,
+                     Polyline,
+                     Graphic,
+                     Color,
+                     Point,
+                     on,
+                     dom
+            ) {
+                map = new Map("map");
+                var tiled = new ArcGISTiledMapServiceLayer("http://services.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer");
+                map.addLayer(tiled, 0);
+                sr = map.spatialReference;
+                var mapCenter = new Point(103.847, 36.0473, sr);
+                map.centerAndZoom(mapCenter);
+
+                clickLayer = new GraphicsLayer({"id":"clickLayer"});
+                map.addLayer(clickLayer);
+                on(dom.byId("addPath"), "click", function(){
+                    console.log(path);
+                    addPath();
+                });
+                function addPath(){
+                    var sms =  new SimpleMarkerSymbol({
+                        "color": [255,0,0,255],
+                        "size": 4,
+                        "angle": -30,
+                        "xoffset": 0,
+                        "yoffset": 0,
+                        "type": "esriSMS",
+                        "style": "esriSMSCircle",
+                        "outline": {
+                            "color": [255,0,0,255],
+                            "width": 1,
+                            "type": "esriSLS",
+                            "style": "esriSLSSolid"
+                        }
+                    });
+                    var sls = new SimpleLineSymbol(SimpleLineSymbol.STYLE_SOLID,
+                        new Color([255, 0, 0]),
+                        2
+                    );
+                    var sfs = new SimpleFillSymbol(SimpleFillSymbol.STYLE_SOLID,
+                        new SimpleLineSymbol(SimpleLineSymbol.STYLE_DASHDOT,
+                            new Color([32,149,217,0.6]), 2),new Color([32,149,217,0.6])
+                    );
+                    var ptStart = new Point(path[index].x, path[index].y, sr);
+                    var ptEnd   = new Point(path[index+1].x, path[index+1].y, sr);
+                    var gPtStart = new Graphic(
+                        ptStart,
+                        sms
+                    );
+                    var gCircleStart = new Graphic(
+                        new Circle(ptStart, {"radius":path[index].radius}),
+                        sfs
+                    );
+                    var gPtEnd = new Graphic(
+                        ptEnd,
+                        sms
+                    );
+                    var gCircleEnd = new Graphic(
+                        new Circle(ptEnd, {"radius":path[index+1].radius}),
+                        sfs
+                    );
+                    var polylineJson = {
+                        "paths":[[[path[index].x,path[index].y], [path[index+1].x,path[index+1].y]]],
+                        "spatialReference":{"wkid":4326}
+
+                    };
+                    var gLine = new Graphic(
+                        new Polyline(polylineJson),
+                        sls
+                    );
+                    clickLayer.add(gLine);
+                    if(index<path.length-1){
+                        clickLayer.add(gCircleEnd);
+                        clickLayer.add(gPtEnd);
+                    }
+                    if(index === 0)
+                    {
+                        clickLayer.add(gCircleStart);
+                        clickLayer.add(gPtStart);
+                    }
+
+                    if(index<path.length-2){
+                        index++;
+                        setTimeout(function () {
+                            addPath();
+                        },1000);
+                    }
+
+                }
+            });
+
+
+    </script>
+</head>
+
+<body>
+<div id="map">
+    <button id="addPath" type="button" style="position: absolute; top: 10pt; right: 15pt; z-index: 99;">添加路径</button>
+</div>
+</body>
+</html>

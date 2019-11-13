@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>轨迹回放</title>
+
+    <link rel="stylesheet" href="https://js.arcgis.com/3.27/esri/css/esri.css">
+    <link rel="stylesheet" href="https://js.arcgis.com/3.27/dijit/themes/tundra/tundra.css">
+</head>
+    <script src="https://js.arcgis.com/3.27/"></script>
+    <style>
+        html, body, #mapDiv
+        {
+            height: 550px;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+        }
+    </style>
+
+    <script type="text/javascript">
+        dojo.require("esri.map");
+        dojo.require("esri.SpatialReference");
+        dojo.require("esri.tasks.GeometryService");
+        dojo.require("esri.dijit.Scalebar");
+        dojo.require("dojo.parser");
+        dojo.require("esri.Color");
+        var map;
+        var points = [];
+        var lineSymbol;
+        var pointSymbol;
+        var carSymbol;
+        var carGraphic;
+        var timer;
+
+        function init() {
+            map = new esri.Map("mapDiv");
+
+            var layer = new esri.layers.ArcGISTiledMapServiceLayer("http://services.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer");
+            map.addLayer(layer);
+            lineSymbol = new esri.symbol.SimpleLineSymbol(esri.symbol.SimpleLineSymbol.STYLE_SOLID, new dojo.Color("red"), 3);
+            pointSymbol = new esri.symbol.SimpleMarkerSymbol(esri.symbol.SimpleMarkerSymbol.STYLE_CIRCLE, 10, new esri.symbol.SimpleLineSymbol(esri.symbol.SimpleLineSymbol.STYLE_SOLID, new dojo.Color([255, 0, 0]), 1), new dojo.Color([255, 0, 0, 1]));
+            carSymbol = new esri.symbol.PictureMarkerSymbol("./car.png", 24, 24)
+
+            var pointLayer = new esri.layers.GraphicsLayer({ id: "pointLayer" });
+            var lineLayer = new esri.layers.GraphicsLayer({ id: "lineLayer" });
+            var carLayer = new esri.layers.GraphicsLayer({ id: "carLayer" });
+            map.addLayer(pointLayer);
+            map.addLayer(lineLayer);
+            map.addLayer(carLayer);
+            dojo.connect(map, "onClick", Click);
+        }
+
+        /**
+         * 点击事件，添加点
+         */
+        function Click(e) {
+            points.push(e.mapPoint);
+            map.getLayer("pointLayer").add(new esri.Graphic(e.mapPoint, pointSymbol));
+
+        }
+
+        /**
+         * 根据回放速度在两点之间进行插值
+         */
+        function interpolation(pointA, pointB, speed) {
+            var tmp = [];
+            if (speed == undefined) {
+                speed = 1;
+            }
+            speed = speed - 0.5; //不能大于播放速度
+            var count = Math.abs(speed) * 25;
+            var disX = (pointB.x - pointA.x) / count;
+            var disY = (pointB.y - pointA.y) / count;
+            var i = 0;
+            while (i <= count) {
+                var x = pointA.x + i * disX;
+                var y = pointA.y + i * disY;
+                tmp.push(new esri.geometry.Point(x, y));
+                i++;
+            }
+            tmp.push(pointB);//防止插值出来的最后一个点到不了B点
+            return tmp;
+        }
+        var j = 0;
+
+        /**
+         * 播放
+         */
+        function play(tmpPoints) {
+            var ref = setTimeout(function () {
+                if (j < tmpPoints.length - 1) {
+                    var line = new esri.geometry.Polyline({ "paths": [[[tmpPoints[j].x, tmpPoints[j].y], [tmpPoints[j + 1].x, tmpPoints[j + 1].y]]] });
+                    var lineGriphic = new esri.Graphic(line, lineSymbol);
+                    map.getLayer("lineLayer").add(lineGriphic);
+                    map.getLayer("carLayer").clear();
+                    carGriphic = new esri.Graphic(tmpPoints[j + 1], carSymbol);
+                    map.getLayer("carLayer").add(carGriphic);
+                    j++;
+                    play(tmpPoints);
+                }
+                else { j = 0; }
+            }, 40);  //小车40毫秒换个位置闪现一次，25*40*speed就是两点之间的时间间隔
+        }
+
+        function Angle(startx, starty, endx, endy) {
+            console.log("+++++++++");
+            var tan = 0
+            if (endx == startx) {
+                tan = Math.atan(0) * 180 / Math.PI
+            } else {
+                tan = Math.atan(Math.abs((endy - starty) / (endx - startx))) * 180 / Math.PI
+                console.log(tan);
+            }
+
+            if (endx >= startx && endy >= starty)//第一象限
+            {
+                return -tan;
+            } else if (endx > startx && endy < starty)//第四象限
+            {
+                return tan;
+            } else if (endx < startx && endy > starty)//第二象限
+            {
+                return tan - 180;
+            } else {
+                return 180 - tan;  //第三象限
+            }
+        }
+
+
+        function Start() {
+            if (timer != null) {
+                clearInterval(timer);
+                map.getLayer("lineLayer").clear();
+            }
+            var replayIndex=0;
+            timer = setInterval(function () {
+                if (replayIndex == points.length - 1) {
+                    clearInterval(timer);
+                }
+                else {
+                    if (replayIndex == 0) {
+                        map.getLayer("lineLayer").clear();
+                    }
+                    var p1 = points[replayIndex];
+                    var p2 = points[++replayIndex];
+                    var tempPoints = interpolation(p1, p2, document.getElementById("txtSpeed").value);
+
+                    var angle = Math.ceil(Angle(p1.x, p1.y, p2.x, p2.y))
+                    console.log(angle);
+                    carSymbol.setAngle(angle)   //设置小车角度
+                    play(tempPoints);
+                }
+            }, document.getElementById("txtSpeed").value * 1000);
+        }
+        dojo.addOnLoad(init);
+    </script>
+
+<body class="tundra">
+<div id="mapDiv">
+</div>
+<div> 先添加点</div>
+回放速度
+<input id="txtSpeed" type="text" value="4" style="width:30px" />
+<input type="button" value="回放" onclick="Start()"/>
+</body>
+</html>

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>轨迹回放</title>
+
+    <link rel="stylesheet" href="https://js.arcgis.com/3.27/esri/css/esri.css">
+    <link rel="stylesheet" href="https://js.arcgis.com/3.27/dijit/themes/tundra/tundra.css">
+    <script src="https://js.arcgis.com/3.27/"></script>
+
+    <script>
+        require(["esri/map",
+                "esri/layers/ArcGISTiledMapServiceLayer",
+                "esri/geometry/Point",
+                "esri/geometry/Multipoint",
+                "esri/geometry/Polyline",
+                "esri/symbols/SimpleLineSymbol",
+                "esri/symbols/PictureMarkerSymbol",
+                "esri/symbols/SimpleMarkerSymbol",
+                "esri/symbols/PictureFillSymbol",
+                "esri/layers/GraphicsLayer",
+                "esri/SpatialReference",
+                "esri/graphic",
+                "esri/dijit/Popup",
+                "esri/Color",
+                "dojo/dom",
+                "dojo/on",
+                "dojo/domReady!"],
+            function(Map,
+                     ArcGISTiledMapServiceLayer,
+                     Point,
+                     Multipoint,
+                     Polyline,
+                     SimpleLineSymbol,
+                     PictureMarkerSymbol,
+                     SimpleMarkerSymbol,
+                     PictureFillSymbol,
+                     GraphicsLayer,
+                     SpatialReference,
+                     Graphic,
+                     Popup,
+                     Color,
+                     dom,
+                     on){
+                //加载地图
+                var map = new Map("mapDiv");
+                var layer = new ArcGISTiledMapServiceLayer("http://services.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer");
+                map.addLayer(layer);
+                //加载数据、创建图层
+                var lineArry = [[119.32,39.59],[109.32,39.66],[119.35,39.11],
+                    [119.00,39.62]]
+                var graphicsLayer = new GraphicsLayer();//放置线图层以及起点终点图片图层
+                var cargraphicsLayer = new GraphicsLayer();//放置小车图层
+                //加载线图层
+                var linesymbol = new SimpleLineSymbol(SimpleLineSymbol.STYLE_SOLID,new Color([255,0,0]),3);
+                var linegeometry = new Polyline(lineArry);
+                var graphic = new Graphic(linegeometry,linesymbol);
+
+                var point = new  Point(119.32,39.59, new SpatialReference({ wkid: 4326 }));
+                map.centerAt(point);
+
+
+
+                //加载起点图片
+                var startSymbol = new PictureMarkerSymbol("./q.jpg",10,10);
+                startSymbol.yoffset = 15;
+                var startGeometry = new Point(lineArry[0], new SpatialReference({ wkid: 4326 }));
+                var startGraphic = new Graphic(startGeometry,startSymbol);
+                //加载终点图片
+                var endSymbol = new PictureMarkerSymbol("./z.jpg",10,10);
+                endSymbol.yoffset = 15;
+                var endGeometry = new Point(lineArry[3], new SpatialReference({ wkid: 4326 }));
+                var endGraphic = new Graphic(endGeometry,endSymbol);
+                //添加到地图
+                graphicsLayer.add(graphic);
+                graphicsLayer.add(startGraphic);
+                graphicsLayer.add(endGraphic);
+                map.addLayer(graphicsLayer);
+
+                //创建小车图层
+                var carSymbol = new PictureMarkerSymbol("./car.jpg",20,20);
+                var carGeometry = new Point(lineArry[0], new SpatialReference({ wkid: 4326 }));
+                var carGraphic = new Graphic(carGeometry,carSymbol);
+                cargraphicsLayer.add(carGraphic);
+                map.addLayer(cargraphicsLayer);
+
+                var i=0;
+                var Auto;
+                document.getElementById("startbtn").onclick = function (){
+                    Auto=window.setInterval(function(){
+                        if(i<lineArry.length-1){
+                            i = i+1;
+                            carGraphic.hide();//上一个点的小车graphic隐藏掉
+                            carGeometry = new Point(lineArry[i], new SpatialReference({ wkid: 4326 }));
+                            carGraphic = new Graphic(carGeometry,carSymbol);
+                            cargraphicsLayer.add(carGraphic);//加载下一个点的小车graphic
+                        }else{
+
+                        }
+                    }, 4000/document.getElementById("txtSpeed").value);//定时函数，根据给的值跳动频率变化，值越大跳动越快
+                };
+
+                document.getElementById("pausebtn").onclick = function(){
+                    clearInterval(Auto);//停止定时函数，
+                    carGeometry = new Point(lineArry[i], new SpatialReference({ wkid: 4326 }));
+                    carGraphic = new Graphic(carGeometry,carSymbol);
+                    cargraphicsLayer.add(carGraphic);
+                };
+                document.getElementById("restartbtn").onclick = function(){
+                    cargraphicsLayer.clear();//清除小车图层，再次加载到初始位置
+                    i = 0;
+                    carGeometry = new Point(lineArry[i], new SpatialReference({ wkid: 4326 }));
+                    carGraphic = new Graphic(carGeometry,carSymbol);
+                    cargraphicsLayer.add(carGraphic);
+                    clearInterval(Auto);
+                }
+            }
+        );
+    </script>
+</head>
+<body class="tundra">
+<div id="mapDiv" style="width:900px; height:600px; border:1px solid #000;"></div>
+<div>
+    <input type="button" id="startbtn" value="开始">
+    <input id="txtSpeed" type="text" value="4" style="width:30px"/>
+    <input type="button" id="pausebtn" value="暂停">
+    <input type="button" id="restartbtn" value="重置">
+</div>
+</body>
+</html>
