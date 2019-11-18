@@ -122,20 +122,80 @@
                     }
                 }]}
 
-        var featuresUrl = "http://services.arcgis.com/nzS0F0zdNLvs7nc8/arcgis/rest/services/cicadas/FeatureServer/0";
-        // var featuresUrl = "http://services.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer";
-        // var myTiledMapServiceLayer = new esri.layers.ArcGISTiledMapServiceLayer("http://services.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer");
+        var layerDefinition = {
+            "geometryType": "esriGeometryPoint",
+            "fields":[
+                {
+                    "name": "FID",
+                    "type": "esriFieldTypeOID",
+                    "alias": "FID"
+                },
+                {
+                    "name": "UserID",
+                    "type": "esriFieldTypeInteger",
+                    "alias": "UserID"
+                },
+                {
+                    "name": "NAME",
+                    "type": "esriFieldTypeString",
+                    "alias": "NAME",
+                    "length": 100
+                },
+                {
+                    "name": "TYPE_USER",
+                    "type": "esriFieldTypeString",
+                    "alias": "TYPE_USER",
+                    "length": 10
+                },
+                {
+                    "name": "CODE",
+                    "type": "esriFieldTypeString",
+                    "alias": "CODE",
+                    "length": 20
+                },
+                {
+                    "name": "ADDRESS",
+                    "type": "esriFieldTypeString",
+                    "alias": "ADDRESS",
+                    "length": 100
+                },
+                {
+                    "name": "TELEPHONE",
+                    "type": "esriFieldTypeString",
+                    "alias": "TELEPHONE",
+                    "length": 60
+                }
+            ]
+        };
 
-
-        var layer = new FeatureLayer(featuresUrl, {
+        var featureSet = new esri.tasks.FeatureSet(dz);
+        var featureCollection = {
+            layerDefinition: layerDefinition,
+            featureSet: featureSet
+        };
+        var layer = new FeatureLayer(featureCollection, {
             id: "cicadas",
             infoTemplate: new InfoTemplate(
-              "蝉",
-              "<strong>${date}</strong><br><hr><em>${tweet}<em>"
+                "蝉",
+                // "<strong>${date}</strong><br><hr><em>${tweet}<em>"
+                "<strong>1111</strong><br><hr><em>xxxx<em>"
             ),
             mode: FeatureLayer.MODE_SNAPSHOT,
             outFields: ["*"]
         });
+        // var featuresUrl = "http://services.arcgis.com/nzS0F0zdNLvs7nc8/arcgis/rest/services/cicadas/FeatureServer/0";
+        // var featuresUrl = "http://services.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer";
+        // var myTiledMapServiceLayer = new esri.layers.ArcGISTiledMapServiceLayer("http://services.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer");
+
+        // var layer = new FeatureLayer(featuresUrl, {
+        //     id: "cicadas",
+        //     infoTemplate: new InfoTemplate(
+        //       "蝉",
+        //       "<strong>${date}</strong><br><hr><em>${tweet}<em>"
+        //     ),
+        //     mode: FeatureLayer.MODE_SNAPSHOT,
+        //     outFields: ["*"]
+        // });
 
         var layerUpdateEnd = layer.on("update-end", initDijit);
         map.addLayer(layer);
