@@ -72,6 +72,10 @@
     function init() {
         var customExtentAndSR = new esri.geometry.Extent(13676444.4499247, 5092822.83792968, 13781163.1786753, 5160163.85984883, new esri.SpatialReference({"wkid": 102100}));
         myMap = new esri.Map("mapDiv", {basemap:'gray',extent: customExtentAndSR});
+
+
+
+
         //note that if you do not havepublic Internet access then you will need to point this url to your own locallyaccessible cached service.
         // 加载谷歌地图服务
         // var myTiledMapServiceLayer = new esri.layers.ArcGISTiledMapServiceLayer("http://services.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer");
