@@ -176,9 +176,9 @@
         var layer = new FeatureLayer(featureCollection, {
             id: "cicadas",
             infoTemplate: new InfoTemplate(
-                "蝉",
+                "CVN-76",
                 // "<strong>${date}</strong><br><hr><em>${tweet}<em>"
-                "<strong>1111</strong><br><hr><em>xxxx<em>"
+                "<strong>里根号</strong><br><hr><em>xxxx<em>"
             ),
             mode: FeatureLayer.MODE_SNAPSHOT,
             outFields: ["*"]
