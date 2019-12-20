@@ -1,6 +1,5 @@
 <!DOCTYPEHTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html>
- 
 <head>
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
     <title>Simple Map</title>
@@ -10,6 +9,7 @@
     <link rel="stylesheet" href="./cal-heatmap-master/cal-heatmap.css" />
     <script type="text/javascript" src="./cal-heatmap-master/cal-heatmap.min.js"></script>
     <script src="https://js.arcgis.com/3.27/"></script>
+<!--    <script src="https://js.arcgis.com/4.0/"></script>-->
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
  </head>
    <script type = "text/javascript">
@@ -62,7 +62,6 @@
         //alert(list[i]);
         let geometry = new esri.geometry.Point(list[i].substring(0, list[i].indexOf(',')), list[i].substring(list[i].indexOf(',') + 1, list[i].length), new esri.SpatialReference({ wkid: 102100 }));
         let graphic = new esri.Graphic(geometry, pointSymbol);
-        console.log(graphic);
         myMap.graphics.add(graphic);
 
         let extent = myMap.extent;
@@ -83,18 +82,20 @@
     }
 
     function draw_points(re) {
-        let pointSymbol = new esri.symbol.SimpleMarkerSymbol();
-        pointSymbol.setOutline = new esri.symbol.SimpleLineSymbol(esri.symbol.SimpleLineSymbol.STYLE_SOLID, new dojo.Color([255, 0, 0]), 1);
-        pointSymbol.setSize(10);
-        pointSymbol.setColor(new dojo.Color([255, 0, 0,1]));
+        let points = [];
         for(let p in re_list[re]['points_list']) {
-            let point = new esri.geometry.Point(re_list[re]['points_list'][p]['lon'], re_list[re]['points_list'][p]['lat'], new esri.SpatialReference({wkid:102100}));
-            let graphic = new esri.Graphic(point, pointSymbol);
-            myMap.graphics.add(graphic);
+            points.push([re_list[re]['points_list'][p]['lon'], re_list[re]['points_list'][p]['lat']]);
         }
-        let time_button = $('#'+re);
-        time_button.attr("onclick", "unbind_points("+re+");");
-        time_button.attr("style", "background:red");
+        let myMultiPoint = {
+            "geometry":{
+                "points":points,
+                "spatialReference":new esri.SpatialReference({wkid:102100})},
+                "symbol":{"color":[255, 0, 0,255],
+                "size":10,"angle":0,"xoffset":0,"yoffset":0,"type":"esriSMS","style":"esriSMSCircle",
+                "outline":{"color":[0, 0, 0,255],"width":1,"type":"esriSLS","style":"esriSLSSolid"}}
+        };
+        let mp = new esri.Graphic(myMultiPoint);
+        myMap.graphics.add(mp);
     }
 
     function unbind_points(re) {
@@ -113,7 +114,12 @@
 
     function init() {
         let customExtentAndSR = new esri.geometry.Extent(13676444.4499247, 5092822.83792968, 13781163.1786753, 5160163.85984883, new esri.SpatialReference({"wkid": 102100}));
-        myMap = new esri.Map("mapDiv", {basemap:'gray',extent: customExtentAndSR});
+        myMap = new esri.Map("mapDiv", {
+            basemap: 'gray',
+            extent: customExtentAndSR,
+            zoom: 3,
+            logo: false
+        });
         //note that if you do not havepublic Internet access then you will need to point this url to your own locallyaccessible cached service.
         // 加载谷歌地图服务
         // let myTiledMapServiceLayer = new esri.layers.ArcGISTiledMapServiceLayer("http://services.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer");
@@ -137,10 +143,20 @@
         let start_date = new Date(re_list[0]['time']);
         let range = new Date(re_list[re_list.length-1]['time']);
         let cal = new CalHeatMap();
+
+        // 每个节点的onclick事件
         let f_click = function(data){
-            console.log(data.getTime());
+            let start_time = data.getTime();
+            let end_time = start_time + 1543420800000 - 1543334400000;
             cal.highlight(data);
+            for(let r in re_list) {
+                let t = new Date(re_list[r]['time']).getTime();
+                if (t > start_time && t < end_time) {
+                    draw_points(r);
+                }
+            }
         };
+
         cal.init({
             itemSelector: "#heatmap",
             start: start_date,
