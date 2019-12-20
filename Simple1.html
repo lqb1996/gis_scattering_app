@@ -82,20 +82,43 @@
     }
 
     function draw_points(re) {
-        let points = [];
         for(let p in re_list[re]['points_list']) {
-            points.push([re_list[re]['points_list'][p]['lon'], re_list[re]['points_list'][p]['lat']]);
+            let point = new esri.geometry.Point(re_list[re]['points_list'][p]['lon'], re_list[re]['points_list'][p]['lat'],
+                new esri.SpatialReference({wkid: 102100}));
+
+            let pointSymbol = new esri.symbol.SimpleMarkerSymbol();
+            pointSymbol.setOutline = new esri.symbol.SimpleLineSymbol(esri.symbol.SimpleLineSymbol.STYLE_SOLID, new dojo.Color([255, 0, 0]),1);
+            pointSymbol.setSize(15);
+            pointSymbol.setColor(new dojo.Color([255,255, 0,1]));
+
+            let ts = new esri.symbol.TextSymbol(re_list[re]['points_list'][p]['words']);
+            ts.setOffset(30, -20);
+
+            let infoTemplate = new esri.InfoTemplate();
+            infoTemplate.setTitle(re_list[re]['points_list'][p]['words']);
+            infoTemplate.setContent(re_list[re]['points_list'][p]['words']);
+
+            let graphic = new esri.Graphic(point, pointSymbol);
+            let text_graphic = new esri.Graphic(point, ts);
+            graphic.setInfoTemplate(infoTemplate);
+            text_graphic.setInfoTemplate(infoTemplate);
+            myMap.graphics.add(graphic);
+            myMap.graphics.add(text_graphic);
         }
-        let myMultiPoint = {
-            "geometry":{
-                "points":points,
-                "spatialReference":new esri.SpatialReference({wkid:102100})},
-                "symbol":{"color":[255, 0, 0,255],
-                "size":10,"angle":0,"xoffset":0,"yoffset":0,"type":"esriSMS","style":"esriSMSCircle",
-                "outline":{"color":[0, 0, 0,255],"width":1,"type":"esriSLS","style":"esriSLSSolid"}}
-        };
-        let mp = new esri.Graphic(myMultiPoint);
-        myMap.graphics.add(mp);
+
+        // 定义一个多点组合的要素,要素中各点的样式和标签相同
+        // let myMultiPoint = {
+        //     "geometry":{
+        //         "points":points,
+        //         "spatialReference":new esri.SpatialReference({wkid:102100})},
+        //     "symbol":{"color":[255, 0, 0,255],
+        //         "size":10,"angle":0,"xoffset":0,"yoffset":0,"type":"esriSMS","style":"esriSMSCircle",
+        //         "outline":{"color":[0, 0, 0,255],"width":1,"type":"esriSLS","style":"esriSLSSolid"}},
+        //     "infoTemplate":{"title":"Vernal Pool Locations","content":"content"}
+        // };
+        // let mp = new esri.Graphic(myMultiPoint);
+        // myMap.graphics.add(mp);
+        // console.log(mp);
     }
 
     function unbind_points(re) {
@@ -115,7 +138,7 @@
     function init() {
         let customExtentAndSR = new esri.geometry.Extent(13676444.4499247, 5092822.83792968, 13781163.1786753, 5160163.85984883, new esri.SpatialReference({"wkid": 102100}));
         myMap = new esri.Map("mapDiv", {
-            basemap: 'gray',
+            basemap: 'dark-gray',
             extent: customExtentAndSR,
             zoom: 3,
             logo: false
@@ -165,7 +188,7 @@
             subdomain: "month",
             highlight: range,
             data: bar,
-            legend: [5, 7, 8, 10],
+            legend: [5, 7, 8, 10, 255],
             onClick: f_click
         });
     }
