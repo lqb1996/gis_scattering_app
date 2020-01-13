@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="https://js.arcgis.com/3.27/dijit/themes/tundra/tundra.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js" charset="utf-8"></script>
     <link rel="stylesheet" href="./cal-heatmap-master/cal-heatmap.css" />
+    <script type="text/javascript" src="./turf.min.js"></script>
     <script type="text/javascript" src="./cal-heatmap-master/cal-heatmap.min.js"></script>
     <script src="https://js.arcgis.com/3.27/"></script>
 <!--    <script src="https://js.arcgis.com/4.0/"></script>-->
@@ -22,9 +23,22 @@
     dojo.require("dojo/dom");
     dojo.require("dojo/domReady!");
 
+    var line = turf.lineString([
+        [-76.091308, 18.427501],
+        [-76.695556, 18.729501],
+        [-76.552734, 19.40443],
+        [-74.61914, 19.134789],
+        [-73.652343, 20.07657],
+        [-73.157958, 20.210656]
+    ]);
+
+    // var curved = turf.bezierSpline(line);
+    // console.log(curved);
+
     // re_list为传入展示数据对象
-    let route = '{[{"lon":"16487626.137","lat":"2073642.762","date":"2019/8/9","entity":"迈耶号导弹驱逐舰","localtion":"珍珠港","content":"8/9有珍珠港出发前往西太平洋地区部署","type":"出港"},{"lon":"16366975.896","lat":"2007893.672","date":"2019/8/11"},{"lon":"16171183.838","lat":"1870310.063","date":"2019/8/13"},{"lon":"16091808.679","lat":"1727434.777","date":"2019/8/15",},{"lon":"16114562.891","lat":"1518016.650","date":"2019/8/17","entity":"迈耶号导弹驱逐舰","localtion":"关岛","content":"8/17抵达关岛阿普拉海军基地，21出港开始巡航","type":"入港"},{"lon":"15266307.028","lat":"1727434.777","date":"2019/8/22"},{"lon":"14520180.536","lat":"1965560.254","date":"2019/8/23"},{"lon":"13969846.102","lat":"2198394.053","date":"2019/8/24"},{"lon":"13407869.978","lat":"2311768.238","date":"2019/8/25","entity":"迈耶号导弹驱逐舰","localtion":"巴士海峡","content":"8/25经巴士海峡进入南海","type":"闯入"},{"lon":"13186677.869","lat":"1849143.354","date":"2019/8/26"},{"lon":"13170802.837","lat":"1399350.788","date":"2019/8/27"},{"lon":"12923681.509","lat":"1057640.730","date":"2019/8/28","entity":"迈耶号导弹驱逐舰","localtion":"南沙美济礁、永暑礁","content":"8/28在南沙美济礁、永暑礁附近海域开展航行自由行动","type":"闯礁"},{"lon":"12345301.186","lat":"584432.491","date":"2019/8/29"},{"lon":"11681460.275","lat":"117045.098","date":"2019/8/30","entity":"迈耶号导弹驱逐舰","localtion":"樟宜海军基地","content":"8/30进入新加坡樟宜海军基地，9/4出港","type":"入港"},{"lon":"11588591.339","lat":"621474.232","date":"2019/9/4"},{"lon":"11292521.997","lat":"1057640.730","date":"2019/9/5","entity":"迈耶号导弹驱逐舰","localtion":"泰国湾","content":"9/5至10在泰国湾参加美国-东盟首次联合海上演习","type":"演习"},{"lon":"11715591.593","lat":"896641.449","date":"2019/9/10"},{"lon":"12070133.969","lat":"933683.190","date":"2019/9/11"},{"lon":"12419384.667","lat":"1140058.603","date":"2019/9/12"},{"lon":"12558555.779","lat":"1851392.317","date":"2019/9/13","entity":"迈耶号导弹驱逐舰","localtion":"西沙群岛","content":"9/13在西沙群岛开展航行自由行动","type":"闯礁"}]}';
+    let route = '{[{"lon":"16487626.137","lat":"2073642.762","date":"2019/8/9","entity":"迈耶号导弹驱逐舰","localtion":"珍珠港","content":"8月9日由珍珠港出发前往西太平洋地区部署","type":"出港"},{"lon":"16366975.896","lat":"2007893.672","date":"2019/8/11"},{"lon":"16171183.838","lat":"1870310.063","date":"2019/8/13"},{"lon":"16091808.679","lat":"1727434.777","date":"2019/8/15",},{"lon":"16114562.891","lat":"1518016.650","date":"2019/8/17","entity":"迈耶号导弹驱逐舰","localtion":"关岛","content":"8月17日抵达关岛阿普拉海军基地，21日出港开始巡航","type":"入港"},{"lon":"15266307.028","lat":"1727434.777","date":"2019/8/22"},{"lon":"14520180.536","lat":"1965560.254","date":"2019/8/23"},{"lon":"13969846.102","lat":"2198394.053","date":"2019/8/24"},{"lon":"13407869.978","lat":"2311768.238","date":"2019/8/25","entity":"迈耶号导弹驱逐舰","localtion":"巴士海峡","content":"8月25日经巴士海峡进入南海","type":"闯入"},{"lon":"13186677.869","lat":"1849143.354","date":"2019/8/26"},{"lon":"13170802.837","lat":"1399350.788","date":"2019/8/27"},{"lon":"12923681.509","lat":"1057640.730","date":"2019/8/28","entity":"迈耶号导弹驱逐舰","localtion":"南沙美济礁、永暑礁","content":"8月28日在南沙美济礁、永暑礁附近海域开展航行自由行动","type":"闯礁"},{"lon":"12345301.186","lat":"584432.491","date":"2019/8/29"},{"lon":"11681460.275","lat":"117045.098","date":"2019/8/30","entity":"迈耶号导弹驱逐舰","localtion":"樟宜海军基地","content":"8月30日进入新加坡樟宜海军基地，9月4日出港","type":"入港"},{"lon":"11588591.339","lat":"621474.232","date":"2019/9/4"},{"lon":"11292521.997","lat":"1057640.730","date":"2019/9/5","entity":"迈耶号导弹驱逐舰","localtion":"泰国湾","content":"9月5日至10日在泰国湾参加美国-东盟首次联合海上演习","type":"演习"},{"lon":"11715591.593","lat":"896641.449","date":"2019/9/10"},{"lon":"12070133.969","lat":"933683.190","date":"2019/9/11"},{"lon":"12419384.667","lat":"1140058.603","date":"2019/9/12"},{"lon":"12558555.779","lat":"1851392.317","date":"2019/9/13","entity":"迈耶号导弹驱逐舰","localtion":"西沙群岛","content":"9月13日在西沙群岛开展航行自由行动","type":"闯礁"}]}';
     const re_list = eval(route);
+    const point_list = [];
     let time_bar_str = '({';
     for(let re in re_list) {
         let d = new Date(re_list[re]['date']).getTime()/1000;
@@ -40,6 +54,7 @@
     let i = 0;
     let sr = null;
     let graphicLayer=null;
+
     function ptPosition() {
         let pointSymbol = new esri.symbol.SimpleMarkerSymbol();
         pointSymbol.setOutline = new esri.symbol.SimpleLineSymbol(esri.symbol.SimpleLineSymbol.STYLE_SOLID, new dojo.Color([255, 0, 0]),1);
@@ -78,15 +93,13 @@
     }
 
     function draw_points(re) {
-        // let point = new esri.geometry.Point(re_list[re]['lon'], re_list[re]['lat'],
-        //     new esri.SpatialReference({wkid: 102100}));
-        let point = new esri.geometry.Point(re_list[re]['lon'], re_list[re]['lat'],
-            sr);
-
+        let point = new esri.geometry.Point(re_list[re]['lon'], re_list[re]['lat'], sr);
         let pointSymbol = new esri.symbol.SimpleMarkerSymbol();
+        // 设置点的半径,在画线段时会有影响
+        let circle_size = 0;
         pointSymbol.setOutline = new esri.symbol.SimpleLineSymbol(esri.symbol.SimpleLineSymbol.STYLE_SOLID, new dojo.Color([255, 0, 0]),1);
-        pointSymbol.setSize(15);
-        pointSymbol.setColor(new dojo.Color([255,255, 0,1]));
+        pointSymbol.setSize(circle_size);
+        pointSymbol.setColor(new dojo.Color([255, 0, 0, 1]));
 
         let content = "";
         let entity = "";
@@ -98,7 +111,7 @@
         }
         let ts = new esri.symbol.TextSymbol(content);
         ts.setOffset(30, -20);
-        ts.setColor([255,255,255]);
+        ts.setColor([0,0,0]);
 
         let infoTemplate = new esri.InfoTemplate();
         infoTemplate.setTitle(entity);
@@ -109,59 +122,36 @@
         graphic.setInfoTemplate(infoTemplate);
         text_graphic.setInfoTemplate(infoTemplate);
 
-        // 如果不是起始点,则画出连线
+        // 如果不是起始点,则画出与上一个点的连线
         if(re >0){
             let polyline = esri.geometry.Polyline({
                 type: "polyline", // autocasts as new Polyline()
                 paths: [[
-                    [re_list[re-1].lon, re_list[re-1].lat],
-                    [re_list[re].lon, re_list[re].lat]
+                    [re_list[re-1]['lon'], re_list[re-1]['lat']],
+                    [re_list[re]['lon'], re_list[re]['lat']]
                 ]],
                 spatialReference: sr
             });
-            polyline = esri.geometry.Polyline(polyline);
-
-            // let zero = new esri.geometry.Point(0, 0, myMap.spatialReference);
-            // let one = new esri.geometry.Point(100, 100, myMap.spatialReference);
-            // let polyline = esri.geometry.Polyline([
-            //         zero,
-            //         one
-            //     ],
-            //     myMap.spatialReference
-            // );
-
-            // Create a symbol for drawing the line
+            // 定义线的样式
             let lineSymbol = esri.symbol.SimpleLineSymbol({
-                // type: "simple-line", // autocasts as SimpleLineSymbol()
-                color: [255, 255, 0],
-                width: 2
+                color: [255, 0, 0],
+                width: 2,
             });
 
-            // Create an object for storing attributes related to the line
-            let lineAtt = {
-                Name: "Keystone Pipeline",
-                Owner: "TransCanada",
-                Length: "3,456 km"
-            };
+            // 如果没有描述内容则不画箭头
+            if(content != "")
+            {
+                lineSymbol.setMarker({
+                style: "arrow",
+                placement: "end",
+                });
+            }
+
             let g_line = new esri.Graphic(polyline, lineSymbol, sr);
             graphicLayer.add(g_line);
         }
         graphicLayer.add(graphic);
         graphicLayer.add(text_graphic);
-
-        // 定义一个多点组合的要素,要素中各点的样式和标签相同
-        // let myMultiPoint = {
-        //     "geometry":{
-        //         "points":points,
-        //         "spatialReference":new esri.SpatialReference({wkid:102100})},
-        //     "symbol":{"color":[255, 0, 0,255],
-        //         "size":10,"angle":0,"xoffset":0,"yoffset":0,"type":"esriSMS","style":"esriSMSCircle",
-        //         "outline":{"color":[0, 0, 0,255],"width":1,"type":"esriSLS","style":"esriSLSSolid"}},
-        //     "infoTemplate":{"title":"Vernal Pool Locations","content":"content"}
-        // };
-        // let mp = new esri.Graphic(myMultiPoint);
-        // myMap.graphics.add(mp);
-        // console.log(mp);
     }
 
     function unbind_points(re) {
@@ -193,36 +183,37 @@
             Color, dom, on
         ) {
             sr = new esri.SpatialReference({"wkid": 102100});
+            let line_str = [];
+            for(let p in re_list) {
+                point_list.push(new esri.geometry.Point(re_list[p]['lon'], re_list[p]['lat'], sr));
+                line_str.push([Number(re_list[p]['lon']), Number(re_list[p]['lat'])]);
+            }
+            line_str = turf.lineString(line_str);
+            let curved = turf.bezierSpline(line_str);
+
             let customExtentAndSR = new Extent(13676444.4499247, 5092822.83792968, 13781163.1786753, 5160163.85984883, sr);
-            console.log(sr);
             myMap = new Map("mapDiv", {
-                basemap: 'dark-gray',
+                basemap: 'streets',
                 extent: customExtentAndSR,
                 zoom: 3,
                 logo: false,
-                spatialReference: {"wkid": 102100}
+                spatialReference: sr
             });
-            graphicLayer=new GraphicsLayer();
-            graphicLayer.id="graphicLayer";
+            graphicLayer = new GraphicsLayer();
+            graphicLayer.id = "graphicLayer";
             myMap.addLayer(graphicLayer);
-            debugger;
 
-        //note that if you do not havepublic Internet access then you will need to point this url to your own locallyaccessible cached service.
-        // 加载谷歌地图服务
-        // let myTiledMapServiceLayer = new esri.layers.ArcGISTiledMapServiceLayer("http://services.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer");
-        // myMap.addLayer(myTiledMapServiceLayer);
-        // 添加时间按钮
-        // for(let re in re_list) {
-        //     let MyDiv = $("#timeSlider");
-        //     let button = document.createElement("input");
-        //     button.setAttribute("type", "button");
-        //     button.setAttribute("value", re_list[re]['time']);
-        //     button.setAttribute("id", re);
-        //     button.style.width = "12%";
-        //     button.setAttribute("onclick", "draw_points("+re+");");
-        //     button.setAttribute("style", "background:rgb(247,247,247)");
-        //     MyDiv.append(button);
-        // }
+            let polyline = esri.geometry.Polyline({
+                type: "polyline",
+                paths: [curved.geometry.coordinates],
+                spatialReference: sr
+            });
+            let lineSymbol = esri.symbol.SimpleLineSymbol({
+                color: [255, 0, 0],
+                width: 2,
+            });
+            let g_line = new esri.Graphic(polyline, lineSymbol, sr);
+            graphicLayer.add(g_line);
 
         // draw_time_bar();
         });
