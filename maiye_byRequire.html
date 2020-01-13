@@ -34,6 +34,8 @@
             {"id":10, "x":113.019257, "y":28.194103, "radius":130000},
             {"id":11, "x":116.535467, "y":26.871059, "radius":110000},
             {"id":12, "x":117.470083, "y":23.943192, "radius":100000}];
+        let route = '{[{"lon":"16487626.137","lat":"2073642.762","date":"2019/8/9","entity":"迈耶号导弹驱逐舰","localtion":"珍珠港","content":"8/9有珍珠港出发前往西太平洋地区部署","type":"出港"},{"lon":"16366975.896","lat":"2007893.672","date":"2019/8/11"},{"lon":"16171183.838","lat":"1870310.063","date":"2019/8/13"},{"lon":"16091808.679","lat":"1727434.777","date":"2019/8/15",},{"lon":"16114562.891","lat":"1518016.650","date":"2019/8/17","entity":"迈耶号导弹驱逐舰","localtion":"关岛","content":"8/17抵达关岛阿普拉海军基地，21出港开始巡航","type":"入港"},{"lon":"15266307.028","lat":"1727434.777","date":"2019/8/22"},{"lon":"14520180.536","lat":"1965560.254","date":"2019/8/23"},{"lon":"13969846.102","lat":"2198394.053","date":"2019/8/24"},{"lon":"13407869.978","lat":"2311768.238","date":"2019/8/25","entity":"迈耶号导弹驱逐舰","localtion":"巴士海峡","content":"8/25经巴士海峡进入南海","type":"闯入"},{"lon":"13186677.869","lat":"1849143.354","date":"2019/8/26"},{"lon":"13170802.837","lat":"1399350.788","date":"2019/8/27"},{"lon":"12923681.509","lat":"1057640.730","date":"2019/8/28","entity":"迈耶号导弹驱逐舰","localtion":"南沙美济礁、永暑礁","content":"8/28在南沙美济礁、永暑礁附近海域开展航行自由行动","type":"闯礁"},{"lon":"12345301.186","lat":"584432.491","date":"2019/8/29"},{"lon":"11681460.275","lat":"117045.098","date":"2019/8/30","entity":"迈耶号导弹驱逐舰","localtion":"樟宜海军基地","content":"8/30进入新加坡樟宜海军基地，9/4出港","type":"入港"},{"lon":"11588591.339","lat":"621474.232","date":"2019/9/4"},{"lon":"11292521.997","lat":"1057640.730","date":"2019/9/5","entity":"迈耶号导弹驱逐舰","localtion":"泰国湾","content":"9/5至10在泰国湾参加美国-东盟首次联合海上演习","type":"演习"},{"lon":"11715591.593","lat":"896641.449","date":"2019/9/10"},{"lon":"12070133.969","lat":"933683.190","date":"2019/9/11"},{"lon":"12419384.667","lat":"1140058.603","date":"2019/9/12"},{"lon":"12558555.779","lat":"1851392.317","date":"2019/9/13","entity":"迈耶号导弹驱逐舰","localtion":"西沙群岛","content":"9/13在西沙群岛开展航行自由行动","type":"闯礁"}]}';
+        const re_list = eval(route);
         var map, clickLayer,sr;
         var index = 0,t=0;
         require([
@@ -67,9 +69,15 @@
                      on,
                      dom
             ) {
-                map = new Map("map");
-                var tiled = new ArcGISTiledMapServiceLayer("http://services.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer");
-                map.addLayer(tiled, 0);
+                let customExtentAndSR = new esri.geometry.Extent(13676444.4499247, 5092822.83792968, 13781163.1786753, 5160163.85984883, new esri.SpatialReference({"wkid": 102100}));
+                map = new Map("mapDiv", {
+                    basemap: 'dark-gray',
+                    extent: customExtentAndSR,
+                    zoom: 3,
+                    logo: false
+                });
+                // var tiled = new ArcGISTiledMapServiceLayer("http://services.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer");
+                // map.addLayer(tiled, 0);
                 sr = map.spatialReference;
                 var mapCenter = new Point(103.847, 36.0473, sr);
                 map.centerAndZoom(mapCenter);
@@ -77,7 +85,6 @@
                 clickLayer = new GraphicsLayer({"id":"clickLayer"});
                 map.addLayer(clickLayer);
                 on(dom.byId("addPath"), "click", function(){
-                    console.log(path);
                     addPath();
                 });
                 function addPath(){
@@ -158,7 +165,7 @@
 </head>
 
 <body>
-<div id="map">
+<div id="mapDiv">
     <button id="addPath" type="button" style="position: absolute; top: 10pt; right: 15pt; z-index: 99;">添加路径</button>
 </div>
 </body>
