@@ -5,13 +5,11 @@
     <title>Simple Map</title>
     <link rel="stylesheet" href="https://js.arcgis.com/3.27/esri/css/esri.css">
     <link rel="stylesheet" href="https://js.arcgis.com/3.27/dijit/themes/tundra/tundra.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js" charset="utf-8"></script>
-    <link rel="stylesheet" href="./cal-heatmap-master/cal-heatmap.css" />
-    <script type="text/javascript" src="./turf.min.js"></script>
-    <script type="text/javascript" src="./cal-heatmap-master/cal-heatmap.min.js"></script>
-    <script src="https://js.arcgis.com/3.27/"></script>
 <!--    <script src="https://js.arcgis.com/4.0/"></script>-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js" charset="utf-8"></script>
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script type="text/javascript" src="./turf.min.js"></script>
+    <script src="https://js.arcgis.com/3.27/"></script>
  </head>
    <script type = "text/javascript">
     dojo.require("esri.map");
@@ -23,71 +21,24 @@
     dojo.require("dojo/dom");
     dojo.require("dojo/domReady!");
 
-    let curved = null;
-
     // re_list为传入展示数据对象
     let route = '{[{"lon":"16487626.137","lat":"2073642.762","date":"2019/8/9","entity":"迈耶号导弹驱逐舰","localtion":"珍珠港","content":"8月9日由珍珠港出发前往西太平洋地区部署","type":"出港"},{"lon":"16366975.896","lat":"2007893.672","date":"2019/8/11"},{"lon":"16171183.838","lat":"1870310.063","date":"2019/8/13"},{"lon":"16091808.679","lat":"1727434.777","date":"2019/8/15",},{"lon":"16114562.891","lat":"1518016.650","date":"2019/8/17","entity":"迈耶号导弹驱逐舰","localtion":"关岛","content":"8月17日抵达关岛阿普拉海军基地，21日出港开始巡航","type":"入港"},{"lon":"15266307.028","lat":"1727434.777","date":"2019/8/22"},{"lon":"14520180.536","lat":"1965560.254","date":"2019/8/23"},{"lon":"13969846.102","lat":"2198394.053","date":"2019/8/24"},{"lon":"13407869.978","lat":"2311768.238","date":"2019/8/25","entity":"迈耶号导弹驱逐舰","localtion":"巴士海峡","content":"8月25日经巴士海峡进入南海","type":"闯入"},{"lon":"13186677.869","lat":"1849143.354","date":"2019/8/26"},{"lon":"13170802.837","lat":"1399350.788","date":"2019/8/27"},{"lon":"12923681.509","lat":"1057640.730","date":"2019/8/28","entity":"迈耶号导弹驱逐舰","localtion":"南沙美济礁、永暑礁","content":"8月28日在南沙美济礁、永暑礁附近海域开展航行自由行动","type":"闯礁"},{"lon":"12345301.186","lat":"584432.491","date":"2019/8/29"},{"lon":"11681460.275","lat":"117045.098","date":"2019/8/30","entity":"迈耶号导弹驱逐舰","localtion":"樟宜海军基地","content":"8月30日进入新加坡樟宜海军基地，9月4日出港","type":"入港"},{"lon":"11588591.339","lat":"621474.232","date":"2019/9/4"},{"lon":"11292521.997","lat":"1057640.730","date":"2019/9/5","entity":"迈耶号导弹驱逐舰","localtion":"泰国湾","content":"9月5日至10日在泰国湾参加美国-东盟首次联合海上演习","type":"演习"},{"lon":"11715591.593","lat":"896641.449","date":"2019/9/10"},{"lon":"12070133.969","lat":"933683.190","date":"2019/9/11"},{"lon":"12419384.667","lat":"1140058.603","date":"2019/9/12"},{"lon":"12558555.779","lat":"1851392.317","date":"2019/9/13","entity":"迈耶号导弹驱逐舰","localtion":"西沙群岛","content":"9月13日在西沙群岛开展航行自由行动","type":"闯礁"}]}';
     const re_list = eval(route);
+    let curved = null;
     const point_list = [];
-    let time_bar_str = '({';
-    for(let re in re_list) {
-        let d = new Date(re_list[re]['date']).getTime()/1000;
-        time_bar_str += '"' + d + '":' + 1 + ',';
-    }
-    time_bar_str += '})';
-    const bar_data = eval(time_bar_str);
     let list;
-    let defaultSymbol;
+    let default_line_symbol;
     let myMap;
-    let click_layer;
-    let icount;
+    let content_box_offset = 10;
     let i = 0;
     let sr = null;
     let graphicLayer=null;
-
-    function ptPosition() {
-        let pointSymbol = new esri.symbol.SimpleMarkerSymbol();
-        pointSymbol.setOutline = new esri.symbol.SimpleLineSymbol(esri.symbol.SimpleLineSymbol.STYLE_SOLID, new dojo.Color([255, 0, 0]),1);
-        pointSymbol.setSize(15);
-        pointSymbol.setColor(new dojo.Color([255,255, 0,1]));
-        let point = new esri.geometry.Point(13740395.6058, 5130594.7971, new esri.SpatialReference({ wkid: 102100 }));
-        let graphic = new esri.Graphic(point, pointSymbol);
-        myMap.graphics.add(graphic);
-        myMap.centerAndZoom(point,18);
-    }
-
-    function go() {
-        let pointSymbol = new esri.symbol.SimpleMarkerSymbol();
-        pointSymbol.setOutline = new esri.symbol.SimpleLineSymbol(esri.symbol.SimpleLineSymbol.STYLE_SOLID, new dojo.Color([255, 0, 0]), 1);
-        pointSymbol.setSize(10);
-        pointSymbol.setColor(new dojo.Color([255, 0, 0,1]));
-        let geometry = new esri.geometry.Point(list[i].substring(0, list[i].indexOf(',')), list[i].substring(list[i].indexOf(',') + 1, list[i].length), new esri.SpatialReference({ wkid: 102100 }));
-        let graphic = new esri.Graphic(geometry, pointSymbol);
-        myMap.graphics.add(graphic);
-
-        let extent = myMap.extent;
-        if (!extent.contains(graphic.geometry)) {
-            myMap.centerAt(geometry);
-        }
-        i++;
-    }
-
-    function gogps() {
-        go();
-        if (i < icount) {
-            // window.setTimeout("gogps()", "2000");
-            gogps();
-        } else {
-            window.clearTimeout("gogps()");
-        }
-    }
 
     function draw_points(re) {
         let point = new esri.geometry.Point(re_list[re]['lon'], re_list[re]['lat'], sr);
         let pointSymbol = new esri.symbol.SimpleMarkerSymbol();
         // 设置点的半径,在画线段时会有影响
         let circle_size = 0;
-        pointSymbol.setOutline = new esri.symbol.SimpleLineSymbol(esri.symbol.SimpleLineSymbol.STYLE_SOLID, new dojo.Color([255, 0, 0]),1);
         pointSymbol.setSize(circle_size);
         pointSymbol.setColor(new dojo.Color([255, 0, 0, 1]));
 
@@ -99,63 +50,73 @@
         if('entity' in re_list[re]){
             entity = re_list[re]['entity'];
         }
-        let ts = new esri.symbol.TextSymbol(content);
-        ts.setOffset(30, -20);
-        ts.setColor([0,0,0]);
 
+        // 单击后的弹窗
         let infoTemplate = new esri.InfoTemplate();
         infoTemplate.setTitle(entity);
         infoTemplate.setContent(content);
-
         let graphic = new esri.Graphic(point, pointSymbol);
-        let text_graphic = new esri.Graphic(point, ts);
         graphic.setInfoTemplate(infoTemplate);
-        text_graphic.setInfoTemplate(infoTemplate);
 
         // 如果不是起始点,则画出与上一个点的连线
         if(re >0){
-            let polyline = esri.geometry.Polyline({
-                type: "polyline", // autocasts as new Polyline()
-                paths: [[
-                    [re_list[re-1]['lon'], re_list[re-1]['lat']],
-                    [re_list[re]['lon'], re_list[re]['lat']]
-                ]],
-                spatialReference: sr
-            });
-            // 定义线的样式
-            let lineSymbol = esri.symbol.SimpleLineSymbol({
-                color: [255, 0, 0],
-                width: 2,
-            });
-
             // 如果没有描述内容则不画箭头
             if(content != "")
             {
-                lineSymbol.setMarker({
-                style: "arrow",
-                placement: "end",
+                // 根据目标点在屏幕中的位置,定义div,并绘制div文字框
+                let scrPt = myMap.toScreen(point);
+                let textDiv = dojo.doc.createElement("div");
+                dojo.attr(textDiv, {
+                    "id":"event_content_"+re,
+                    "class":"event_content"
                 });
-            }
+                dojo.style(textDiv, {
+                    "left": scrPt.x + content_box_offset + "px",
+                    "top": scrPt.y + content_box_offset + "px",
+                    "position": "absolute",
+                    "z-index": 99,
+                    "opacity": 0.8,
+                    "background": "#202020",
+                    "font-size": "10px",
+                    "border": "1px solid #0096ff",
+                    "padding": "0.1em 0.3em 0.1em",
+                    "border-radius": "3px",
+                    "box-shadow": "0 0 0.75em #777777"
+                });
+                // let manuf = decodeURI(graphic.attributes.manuf,'UTF-8');
+                textDiv.innerHTML = "<font color='#ffffff'>" + content + "</font>";
+                dojo.byId("mapDiv").appendChild(textDiv);
 
-            let g_line = new esri.Graphic(polyline, lineSymbol, sr);
-            graphicLayer.add(g_line);
+                // 画箭头,bezier化后的曲线中不一定有原线条的点,需计算距离取到bezier曲线上的点后画出箭头
+                let min_dis = -1;
+                let min_dis_idx;
+                for(let c in curved.geometry.coordinates){
+                    let dis_x = Math.pow((curved.geometry.coordinates[c][0]-re_list[re]['lon']), 2);
+                    let dis_y = Math.pow((curved.geometry.coordinates[c][1]-re_list[re]['lat']), 2);
+                    let dis = dis_x + dis_y;
+                    if (dis < min_dis || min_dis == -1){
+                        min_dis = dis;
+                        min_dis_idx = c;
+                    }
+                }
+                let polyline = esri.geometry.Polyline({
+                type: "polyline", // autocasts as new Polyline()
+                paths: [[
+                    [curved.geometry.coordinates[min_dis_idx-1][0], curved.geometry.coordinates[min_dis_idx-1][1]],
+                    [curved.geometry.coordinates[min_dis_idx][0], curved.geometry.coordinates[min_dis_idx][1]]
+                ]],
+                spatialReference: sr
+                });
+                let arrow_line_symbol = default_line_symbol;
+                arrow_line_symbol.setMarker({
+                    style: "arrow",
+                    placement: "end",
+                });
+                let g_line = new esri.Graphic(polyline, arrow_line_symbol, sr);
+                graphicLayer.add(g_line);
+            }
         }
         graphicLayer.add(graphic);
-        graphicLayer.add(text_graphic);
-    }
-
-    function unbind_points(re) {
-        myMap.graphics.clear();
-        let time_button = $('#'+re);
-        time_button.attr("onclick", "draw_points("+re+");");
-        time_button.attr("style", "background:rgb(247,247,247)");
-        // 编历选中的时间按钮,重新绘制位置坐标
-        for(let r in re_list) {
-            let b = $('#'+r);
-            if(b.attr("style") == "background:red") {
-                draw_points(r);
-            }
-        }
     }
 
     function init() {
@@ -172,11 +133,17 @@
             Graphic,Extent,
             Color, dom, on
         ) {
+            // 定义全局线样式
+            default_line_symbol = esri.symbol.SimpleLineSymbol({
+                color: [255, 255, 0],
+                width: 2,
+            });
+            //
             sr = new esri.SpatialReference({"wkid": 102100});
 
             let customExtentAndSR = new Extent(13676444.4499247, 5092822.83792968, 13781163.1786753, 5160163.85984883, sr);
             myMap = new Map("mapDiv", {
-                basemap: 'streets',
+                basemap: 'dark-gray',
                 extent: customExtentAndSR,
                 zoom: 3,
                 logo: false,
@@ -186,6 +153,7 @@
             graphicLayer.id = "graphicLayer";
             myMap.addLayer(graphicLayer);
 
+            // 计算bezier曲线,将结果放在curved中
             let line_str = [];
             for(let p in re_list) {
                 point_list.push(new esri.geometry.Point(re_list[p]['lon'], re_list[p]['lat'], sr));
@@ -198,17 +166,15 @@
     }
 
     function show_route() {
+        // 绘制curved中的bezier曲线
         let polyline = esri.geometry.Polyline({
             type: "polyline",
             paths: [curved.geometry.coordinates],
             spatialReference: sr
         });
-        let lineSymbol = esri.symbol.SimpleLineSymbol({
-            color: [255, 0, 0],
-            width: 2,
-        });
-        let g_line = new esri.Graphic(polyline, lineSymbol, sr);
+        let g_line = new esri.Graphic(polyline, default_line_symbol, sr);
         graphicLayer.add(g_line);
+        // 描点
         for(let r in re_list){
             draw_points(r);
         }

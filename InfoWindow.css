@@ -1,0 +1,43 @@
+/*自定义InfoWindow样式*/
+.myInfoWindow {
+    position: absolute;
+    z-index: 100;
+    font-family: sans-serif;
+    font-size: 12px;
+    background-color:#ffffff;
+    border-radius:10px;
+}
+.info-content {
+    border-radius:10px;
+    position: relative;
+    background-color:#ffffff;
+    color:#353535;
+    overflow: auto;
+}
+.info-close {
+    position: absolute; top: 5px; right: 5px;
+    cursor: pointer;
+    background: url(../images/infowindow_close.png) no-repeat scroll 0 0 transparent;
+    width: 12px;
+    height: 12px;
+}
+.info-close:hover  {
+    background-color: red;
+}
+.info-title {
+    border-radius:10px;
+    font-weight: bold;
+    background-color:#4774d9;
+    color:#ffffff;
+    height:20px;
+}
+.info-arrow {
+    width: 0;
+    height: 0;
+    position: absolute;
+    bottom: -15px;
+    border-left: 15px solid transparent;
+    border-right: 15px solid transparent;
+    border-top: 15px solid #ffffff;
+    margin-left: calc(50% - 15px);
+}
