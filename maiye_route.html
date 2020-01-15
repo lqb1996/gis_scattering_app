@@ -29,7 +29,7 @@
     let list;
     let default_line_symbol;
     let myMap;
-    let content_box_x_offset = -95;
+    let content_box_x_offset = 30;
     let content_box_y_offset = 30;
     let i = 0;
     let sr = null;
@@ -74,16 +74,18 @@
                 dojo.style(textDiv, {
                     "left": scrPt.x + content_box_x_offset + "px",
                     "top": scrPt.y + content_box_y_offset + "px",
-                    "width": "190px",
+                    "max-width": "250px",
+                    "width": "auto",
                     "position": "absolute",
                     "z-index": 99,
                     "opacity": 0.8,
-                    "background": "#1c1c1c",
+                    "background": "#222222",
                     "font-size": "14px",
                     "border": "1px solid #0096ff",
                     "padding": "0.1em 0.3em 0.1em",
                     "border-radius": "3px",
-                    "box-shadow": "0 0 0.75em #777777"
+                    "box-shadow": "0 0 0.75em #777777",
+                    "user-select": "none"
                 });
                 // let manuf = decodeURI(graphic.attributes.manuf,'UTF-8');
                 textDiv.innerHTML = "<font color='#ffffff'>" + content + "</font>";
@@ -137,7 +139,7 @@
         ) {
             // 定义全局线样式
             default_line_symbol = esri.symbol.SimpleLineSymbol({
-                color: [255, 0, 0],
+                color: [255, 0, 255],
                 width: 2,
             });
             //
@@ -145,7 +147,7 @@
 
             let customExtentAndSR = new Extent(13676444.4499247, 5092822.83792968, 13781163.1786753, 5160163.85984883, sr);
             myMap = new Map("mapDiv", {
-                basemap: 'satellite',
+                basemap: 'dark-gray',
                 extent: customExtentAndSR,
                 zoom: 3,
                 logo: false,
