@@ -29,7 +29,8 @@
     let list;
     let default_line_symbol;
     let myMap;
-    let content_box_offset = 10;
+    let content_box_x_offset = -95;
+    let content_box_y_offset = 30;
     let i = 0;
     let sr = null;
     let graphicLayer=null;
@@ -67,17 +68,18 @@
                 let scrPt = myMap.toScreen(point);
                 let textDiv = dojo.doc.createElement("div");
                 dojo.attr(textDiv, {
-                    "id":"event_content_"+re,
+                    "id":"event_content",
                     "class":"event_content"
                 });
                 dojo.style(textDiv, {
-                    "left": scrPt.x + content_box_offset + "px",
-                    "top": scrPt.y + content_box_offset + "px",
+                    "left": scrPt.x + content_box_x_offset + "px",
+                    "top": scrPt.y + content_box_y_offset + "px",
+                    "width": "190px",
                     "position": "absolute",
                     "z-index": 99,
                     "opacity": 0.8,
-                    "background": "#202020",
-                    "font-size": "10px",
+                    "background": "#1c1c1c",
+                    "font-size": "14px",
                     "border": "1px solid #0096ff",
                     "padding": "0.1em 0.3em 0.1em",
                     "border-radius": "3px",
@@ -113,6 +115,7 @@
                     placement: "end",
                 });
                 let g_line = new esri.Graphic(polyline, arrow_line_symbol, sr);
+                console.log(content);
                 graphicLayer.add(g_line);
             }
         }
@@ -135,7 +138,7 @@
         ) {
             // 定义全局线样式
             default_line_symbol = esri.symbol.SimpleLineSymbol({
-                color: [255, 255, 0],
+                color: [255, 0, 0],
                 width: 2,
             });
             //
@@ -143,7 +146,7 @@
 
             let customExtentAndSR = new Extent(13676444.4499247, 5092822.83792968, 13781163.1786753, 5160163.85984883, sr);
             myMap = new Map("mapDiv", {
-                basemap: 'dark-gray',
+                basemap: 'satellite',
                 extent: customExtentAndSR,
                 zoom: 3,
                 logo: false,
@@ -156,13 +159,34 @@
             // 计算bezier曲线,将结果放在curved中
             let line_str = [];
             for(let p in re_list) {
-                point_list.push(new esri.geometry.Point(re_list[p]['lon'], re_list[p]['lat'], sr));
+                if(re_list[p]['content'] != ""){
+                    point_list.push(new esri.geometry.Point(re_list[p]['lon'], re_list[p]['lat'], sr));
+                }
                 line_str.push([Number(re_list[p]['lon']), Number(re_list[p]['lat'])]);
             }
             line_str = turf.lineString(line_str);
             curved = turf.bezierSpline(line_str);
+
+            // 加上放大缩小,鼠标拖动,键盘移动的事件监听,使文字标签跟着移动
+            myMap.on("zoom-end", re_show_templates);
+            myMap.on("mouse-drag-end", re_show_templates);
+            myMap.on("pan-end", re_show_templates);
+
+            show_route();
         // draw_time_bar();
         });
+    }
+
+    // 触发事件后,清空并重新绘制
+    function re_show_templates() {
+        graphicLayer.clear();
+        for(let id in point_list){
+            let d = dojo.byId("event_content");
+            if(d != null) {
+                d.parentNode.removeChild(d);
+            }
+        }
+        show_route();
     }
 
     function show_route() {
@@ -196,7 +220,7 @@
     </tr>
     <tr>
         <td><div id="heatmap">
-            <input type="button" value="按钮" onclick="show_route();">
+<!--            <input type="button" value="按钮" onclick="show_route();">-->
         </div></td>
 <!--        <td><div id="timeSlider">-->
 <!--        </div></td>-->
