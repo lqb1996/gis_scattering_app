@@ -115,7 +115,6 @@
                     placement: "end",
                 });
                 let g_line = new esri.Graphic(polyline, arrow_line_symbol, sr);
-                console.log(content);
                 graphicLayer.add(g_line);
             }
         }
@@ -171,7 +170,6 @@
             myMap.on("zoom-end", re_show_templates);
             myMap.on("mouse-drag-end", re_show_templates);
             myMap.on("pan-end", re_show_templates);
-
             show_route();
         // draw_time_bar();
         });
