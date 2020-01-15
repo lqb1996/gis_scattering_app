@@ -137,12 +137,11 @@
             Graphic,Extent,
             Color, dom, on
         ) {
-            // 定义全局线样式
+            // 定义全局线样式和空间坐标
             default_line_symbol = esri.symbol.SimpleLineSymbol({
                 color: [255, 0, 255],
                 width: 2,
             });
-            //
             sr = new esri.SpatialReference({"wkid": 102100});
 
             let customExtentAndSR = new Extent(13676444.4499247, 5092822.83792968, 13781163.1786753, 5160163.85984883, sr);
