@@ -20,7 +20,14 @@
 		#viewDiv {
 		  padding: 0;
 		  margin: 0;
-		  height: 100%;
+		  height: 97%;
+		  width: 100%;
+		}
+
+		#dataZoom {
+		  padding: 0;
+		  margin: 0;
+		  height: 3%;
 		  width: 100%;
 		}
 
@@ -43,6 +50,7 @@
     <input class="esri-component esri-widget-button esri-widget esri-interactive" type="button"
       id="switch-btn" value="3D">
   </div>
+<div id="dataZoom"></div>
 <script src="./echarts3Layer/echarts3Extent.js"></script>
 <script>
 var package_path = window.location.href.substring(0, window.location.href.lastIndexOf('/'));
@@ -57,6 +65,9 @@ var package_path = window.location.href.substring(0, window.location.href.lastIn
 <script src="https://js.arcgis.com/4.6/"></script>
 <script>
 var map,view,options=[];
+let route = '{[{"lon":"16487626.137","lat":"2073642.762","date":"2019/8/9","entity":"迈耶号导弹驱逐舰","localtion":"珍珠港","content":"8月9日由珍珠港出发前往西太平洋地区部署","type":"出港"},{"lon":"16366975.896","lat":"2007893.672","date":"2019/8/11"},{"lon":"16171183.838","lat":"1870310.063","date":"2019/8/13"},{"lon":"16091808.679","lat":"1727434.777","date":"2019/8/15",},{"lon":"16114562.891","lat":"1518016.650","date":"2019/8/17","entity":"迈耶号导弹驱逐舰","localtion":"关岛","content":"8月17日抵达关岛阿普拉海军基地，21日出港开始巡航","type":"入港"},{"lon":"15266307.028","lat":"1727434.777","date":"2019/8/22"},{"lon":"14520180.536","lat":"1965560.254","date":"2019/8/23"},{"lon":"13969846.102","lat":"2198394.053","date":"2019/8/24"},{"lon":"13407869.978","lat":"2311768.238","date":"2019/8/25","entity":"迈耶号导弹驱逐舰","localtion":"巴士海峡","content":"8月25日经巴士海峡进入南海","type":"闯入"},{"lon":"13186677.869","lat":"1849143.354","date":"2019/8/26"},{"lon":"13170802.837","lat":"1399350.788","date":"2019/8/27"},{"lon":"12923681.509","lat":"1057640.730","date":"2019/8/28","entity":"迈耶号导弹驱逐舰","localtion":"南沙美济礁、永暑礁","content":"8月28日在南沙美济礁、永暑礁附近海域开展航行自由行动","type":"闯礁"},{"lon":"12345301.186","lat":"584432.491","date":"2019/8/29"},{"lon":"11681460.275","lat":"117045.098","date":"2019/8/30","entity":"迈耶号导弹驱逐舰","localtion":"樟宜海军基地","content":"8月30日进入新加坡樟宜海军基地，9月4日出港","type":"入港"},{"lon":"11588591.339","lat":"621474.232","date":"2019/9/4"},{"lon":"11292521.997","lat":"1057640.730","date":"2019/9/5","entity":"迈耶号导弹驱逐舰","localtion":"泰国湾","content":"9月5日至10日在泰国湾参加美国-东盟首次联合海上演习","type":"演习"},{"lon":"11715591.593","lat":"896641.449","date":"2019/9/10"},{"lon":"12070133.969","lat":"933683.190","date":"2019/9/11"},{"lon":"12419384.667","lat":"1140058.603","date":"2019/9/12"},{"lon":"12558555.779","lat":"1851392.317","date":"2019/9/13","entity":"迈耶号导弹驱逐舰","localtion":"西沙群岛","content":"9月13日在西沙群岛开展航行自由行动","type":"闯礁"}]}';
+const re_list = eval(route);
+
 require([
     "esri/Map",
     'esri/views/MapView',
@@ -71,13 +82,13 @@ require([
 ) {
 	var switchButton = document.getElementById("switch-btn");
 	map = new Map({
-		basemap: "oceans",
+		basemap: "satellite",
 		ground: "world-elevation"
 	});
 	view = new MapView({
 		map: map,
 		container: 'viewDiv',
-		zoom: 5,
+		zoom: 3,
 		center: [122.45, 37.75]
 	});
 	
@@ -255,77 +266,37 @@ require([
     var color = ['#a6c84c', '#ffa022', '#46bee9'];
     var series = [];
     [['北京', BJData], ['上海', SHData], ['广州', GZData]].forEach(function (item, i) {
-        series.push({
-                    name: item[0] + ' Top10',
-                    type: 'lines',
-                    zlevel: 1,
-                    effect: {
-                        show: true,
-                        period: 6,
-                        trailLength: 0.7,
-                        color: '#fff',
-                        symbolSize: 3
-                    },
-                    lineStyle: {
-                        normal: {
-                            color: color[i],
-                            width: 0,
-                            curveness: 0.2
-                        }
-                    },
-                    data: convertData(item[1])
+        series.push(
+            {
+                name: item[0] + ' Top10',
+                type: 'effectScatter',
+                coordinateSystem: 'geo',
+                zlevel: 2,
+                rippleEffect: {
+                    brushType: 'stroke'
                 },
-                {
-                    name: item[0] + ' Top10',
-                    type: 'lines',
-                    zlevel: 2,
-                    effect: {
+                label: {
+                    normal: {
                         show: true,
-                        period: 6,
-                        trailLength: 0,
-                        symbol: planePath,
-                        symbolSize: 15
-                    },
-                    lineStyle: {
-                        normal: {
-                            color: color[i],
-                            width: 1,
-                            opacity: 0.4,
-                            curveness: 0.2
-                        }
-                    },
-                    data: convertData(item[1])
+                        position: 'right',
+                        formatter: '{b}'
+                    }
                 },
-                {
-                    name: item[0] + ' Top10',
-                    type: 'effectScatter',
-                    coordinateSystem: 'geo',
-                    zlevel: 2,
-                    rippleEffect: {
-                        brushType: 'stroke'
-                    },
-                    label: {
-                        normal: {
-                            show: true,
-                            position: 'right',
-                            formatter: '{b}'
-                        }
-                    },
-                    symbolSize: function (val) {
-                        return val[2] / 8;
-                    },
-                    itemStyle: {
-                        normal: {
-                            color: color[i]
-                        }
-                    },
-                    data: item[1].map(function (dataItem) {
-                        return {
-                            name: dataItem[1].name,
-                            value: geoCoordMap[dataItem[1].name].concat([dataItem[1].value])
-                        };
-                    })
-                });
+                symbolSize: function (val) {
+                    return val[2] / 8;
+                },
+                itemStyle: {
+                    normal: {
+                        color: color[i]
+                    }
+                },
+                data: item[1].map(function (dataItem) {
+                    return {
+                        name: dataItem[1].name,
+                        value: geoCoordMap[dataItem[1].name].concat([dataItem[1].value])
+                    };
+                })
+            });
     });
     var option = {
 		title: {
@@ -367,19 +338,54 @@ require([
             }
         },
         series: series
-    };	
-	
+    };
 	options.push(option);
+
+	// let route = {
+    //     name: item[0] + ' Top10',
+    //     type: 'lines',
+    //     zlevel: 1,
+    //     effect: {
+    //         show: true,
+    //         period: 6,
+    //         trailLength: 0.7,
+    //         color: '#fff',
+    //         symbolSize: 3
+    //     },
+    //     lineStyle: {
+    //         normal: {
+    //             color: color[i],
+    //             width: 0,
+    //             curveness: 0.2
+    //         }
+    //     },
+    //     data: convertData(item[1])
+    // };
+	let option_time = {
+        dataZoom: [
+            {   // 这个dataZoom组件，默认控制x轴。
+                type: 'slider', // 这个 dataZoom 组件是 slider 型 dataZoom 组件
+                start: 10,      // 左边在 10% 的位置。
+                end: 60         // 右边在 60% 的位置。
+            }
+        ],
+        series: route
+    };
+
 	view.when(function(){
-		initChart()
+		initChart();
 	});
 	function initChart(){
 		options.forEach((option,index)=>{
 			var overlay = new Echarts3Layer(view, echarts,'chartId_'+index);
 			var chartsContainer = overlay.getEchartsContainer();
 			overlay.initECharts(chartsContainer);
-			overlay.setOption(option)			   
-		})
+			overlay.setOption(option);
+		});
+
+		let data_div = $("#dataZoom");
+        let dataZoom = echarts.init();
+        dataZoom.setOption(option_time);
 	}
 
 	//2D,3D的转换按钮
