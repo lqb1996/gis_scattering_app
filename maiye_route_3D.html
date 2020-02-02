@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>Intro to SceneView - Create a 3D map</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js" charset="utf-8"></script>
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+<script type="text/javascript" src="./turf.min.js"></script>
+<script type="text/javascript" src="./echarts.js"></script>
+<script type="text/javascript" src="./echarts-gl.js"></script>
+<title>maiye_route_3D</title>
+<style>
+    html,
+    body,
+    #viewDiv {
+        padding: 0;
+        margin: 0;
+        height: 100%;
+        width: 100%;
+    }
+</style>
+<link rel="stylesheet" href="https://js.arcgis.com/4.14/esri/themes/light/main.css"/>
+<script src="./echarts3Layer/echarts3Extent.js"></script>
+<script>
+    var package_path = window.location.href.substring(0, window.location.href.lastIndexOf('/'));
+    var dojoConfig = {
+        parseOnLoad: true,
+        packages: [{
+            "name": "src",
+            "location": package_path+"/echarts3Layer/"
+        }]
+    };
+</script>
+<script src="https://js.arcgis.com/4.14/"></script>
+
+<script>
+    let route = '{[{"lon":"16487626.137","lat":"2073642.762","date":"2019/8/9","entity":"迈耶号导弹驱逐舰","localtion":"珍珠港","content":"8月9日由珍珠港出发前往西太平洋地区部署","type":"出港"},{"lon":"16366975.896","lat":"2007893.672","date":"2019/8/11"},{"lon":"16171183.838","lat":"1870310.063","date":"2019/8/13"},{"lon":"16091808.679","lat":"1727434.777","date":"2019/8/15",},{"lon":"16114562.891","lat":"1518016.650","date":"2019/8/17","entity":"迈耶号导弹驱逐舰","localtion":"关岛","content":"8月17日抵达关岛阿普拉海军基地，21日出港开始巡航","type":"入港"},{"lon":"15266307.028","lat":"1727434.777","date":"2019/8/22"},{"lon":"14520180.536","lat":"1965560.254","date":"2019/8/23"},{"lon":"13969846.102","lat":"2198394.053","date":"2019/8/24"},{"lon":"13407869.978","lat":"2311768.238","date":"2019/8/25","entity":"迈耶号导弹驱逐舰","localtion":"巴士海峡","content":"8月25日经巴士海峡进入南海","type":"闯入"},{"lon":"13186677.869","lat":"1849143.354","date":"2019/8/26"},{"lon":"13170802.837","lat":"1399350.788","date":"2019/8/27"},{"lon":"12923681.509","lat":"1057640.730","date":"2019/8/28","entity":"迈耶号导弹驱逐舰","localtion":"南沙美济礁、永暑礁","content":"8月28日在南沙美济礁、永暑礁附近海域开展航行自由行动","type":"闯礁"},{"lon":"12345301.186","lat":"584432.491","date":"2019/8/29"},{"lon":"11681460.275","lat":"117045.098","date":"2019/8/30","entity":"迈耶号导弹驱逐舰","localtion":"樟宜海军基地","content":"8月30日进入新加坡樟宜海军基地，9月4日出港","type":"入港"},{"lon":"11588591.339","lat":"621474.232","date":"2019/9/4"},{"lon":"11292521.997","lat":"1057640.730","date":"2019/9/5","entity":"迈耶号导弹驱逐舰","localtion":"泰国湾","content":"9月5日至10日在泰国湾参加美国-东盟首次联合海上演习","type":"演习"},{"lon":"11715591.593","lat":"896641.449","date":"2019/9/10"},{"lon":"12070133.969","lat":"933683.190","date":"2019/9/11"},{"lon":"12419384.667","lat":"1140058.603","date":"2019/9/12"},{"lon":"12558555.779","lat":"1851392.317","date":"2019/9/13","entity":"迈耶号导弹驱逐舰","localtion":"西沙群岛","content":"9月13日在西沙群岛开展航行自由行动","type":"闯礁"}]}';
+    const re_list = eval(route);
+    let curved = null;
+    let list;
+    let default_line_symbol;
+    let content_box_x_offset = 30;
+    let content_box_y_offset = 30;
+    let i = 0;
+    let sr = null;
+    let graphicLayer=null;
+
+    require([
+        "esri/Map",
+        "esri/Graphic",
+        "esri/views/SceneView",
+        "esri/geometry/Mesh",
+        "esri/geometry/Point",
+        "esri/geometry/SpatialReference",
+        "esri/geometry/support/meshUtils",
+        "esri/symbols",
+        "esri/layers/GraphicsLayer",
+        "dojo/dom", "dojo/on", "dojo/domReady!",
+        // "src/Echarts3Layer"
+    ], function(
+        Map,
+        Graphic,
+        SceneView,
+        Mesh,
+        Point,
+        SpatialReference,
+        mesh,
+        symbols,
+        GraphicsLayer,
+        dom, on,
+        // Echarts3Layer
+        ) {
+
+        sr = new SpatialReference({"wkid": 102100});
+        let map = new Map({
+            basemap: "dark-gray",
+            ground: "world-elevation",
+            logo: false,
+            spatialReference: sr
+        });
+
+        let view = new SceneView({
+            container: "viewDiv",
+            map: map,
+            scale: 50000000,
+            center: [Number(re_list[5]['lon']), Number(re_list[5]['lat'])],
+            spatialReference: sr,
+            starsEnabled: false,
+            atmosphereEnabled: false,
+            environment: {
+                lighting: {
+                    directShadowsEnabled: true,
+                    ambientOcclusionEnabled: true
+                }
+            },
+            camera: {
+                position: [
+                    (-Number(re_list[10]['lon'])-40),
+                    (-Number(re_list[10]['lat'])+20),
+                    7000000
+                ],
+                heading: 0,
+                tilt: 20,
+                spatialReference: sr
+            }
+        });
+
+        graphicLayer = new GraphicsLayer();
+        graphicLayer.id = "graphicLayer";
+        map.add(graphicLayer);
+
+        // 计算bezier曲线,将结果放在curved中
+        let line_str = [];
+        for(let p in re_list) {
+            line_str.push([Number(re_list[p]['lon']), Number(re_list[p]['lat'])]);
+        }
+        line_str = turf.lineString(line_str);
+        curved = turf.bezierSpline(line_str);
+
+        default_line_symbol = {
+            type: "simple-line",
+            color: [255, 0, 0],
+            width: 4
+        };
+        // 加上放大缩小,鼠标拖动,键盘移动的事件监听,使文字标签跟着移动
+        // on("mouse-drag-end", re_show_templates);
+        // on("pan-end", re_show_templates);
+        view.when(function () {
+            show_route();
+        },function (error) {
+            console.log(error);
+        });
+
+        function show_route() {
+            // 绘制curved中的bezier曲线
+            let polyline = {
+                type: "polyline",
+                paths: [curved.geometry.coordinates],
+                spatialReference: sr
+            };
+            let g_line = new Graphic({
+                geometry: polyline,
+                symbol: default_line_symbol,
+                spatialReference: sr
+            });
+            graphicLayer.add(g_line);
+            // 描点
+            for(let i in re_list) {
+                draw_points(i);
+            }
+        }
+
+        function draw_points(re) {
+            let point = new Point(re_list[re]['lon'], re_list[re]['lat'], sr);
+
+            let content = "";
+            let entity = "";
+            if('content' in re_list[re]) {
+                content = re_list[re]['content'];
+            }
+            if('entity' in re_list[re]){
+                entity = re_list[re]['entity'];
+            }
+
+            // 单击后的弹窗
+            // let graphic = new Graphic(point, pointSymbol);
+
+            // 如果不是起始点,则画出与上一个点的连线
+                if(content != "")
+                {
+                    // 根据目标点在屏幕中的位置,定义div,并绘制div文字框
+                    // let scrPt = view.toScreen(point);
+                    // let textDiv = dojo.doc.createElement("div");
+                    // dojo.attr(textDiv, {
+                    //     "id":"event_content",
+                    //     "class":"event_content"
+                    // });
+                    // dojo.style(textDiv, {
+                    //     "left": scrPt.x + content_box_x_offset + "px",
+                    //     "top": scrPt.y + content_box_y_offset + "px",
+                    //     "max-width": "250px",
+                    //     "width": "auto",
+                    //     "position": "absolute",
+                    //     "z-index": 99,
+                    //     "opacity": 0.8,
+                    //     "background": "#222222",
+                    //     "font-size": "14px",
+                    //     "border": "1px solid #0096ff",
+                    //     "padding": "0.1em 0.3em 0.1em",
+                    //     "border-radius": "3px",
+                    //     "box-shadow": "0 0 0.75em #777777",
+                    //     "user-select": "none"
+                    // });
+                    // // let manuf = decodeURI(graphic.attributes.manuf,'UTF-8');
+                    // textDiv.innerHTML = "<font color='#ffffff'>" + content + "</font>";
+                    // dojo.byId("mapDiv").appendChild(textDiv);
+
+                    // 画箭头,bezier化后的曲线中不一定有原线条的点,需计算距离取到bezier曲线上的点后画出箭头
+                    let min_dis = -1;
+                    let min_dis_idx;
+                    for(let c in curved.geometry.coordinates){
+                        let dis_x = Math.pow((curved.geometry.coordinates[c][0]-re_list[re]['lon']), 2);
+                        let dis_y = Math.pow((curved.geometry.coordinates[c][1]-re_list[re]['lat']), 2);
+                        let dis = dis_x + dis_y;
+                        if (dis < min_dis || min_dis == -1){
+                            min_dis = dis;
+                            min_dis_idx = c;
+                        }
+                    }
+                }
+            }
+
+        function draw_arrow(view, points, l) { // 箭头绘制 points为待连线的两个点 l为箭头在屏幕上的像素长度
+            let lastPoint = points[points.length - 1];
+            let lastSecPoint = points[points.length - 2];
+            lastPoint = view.toScreen(new Point({
+                x: lastPoint[0],
+                y: lastPoint[1],
+                "spatialReference": view.spatialReference
+            }));
+            lastSecPoint = view.toScreen(new Point({
+                x: lastSecPoint[0],
+                y: lastSecPoint[1],
+                "spatialReference": view.spatialReference
+            }));
+            let x1 = lastPoint.x;
+            let y1 = lastPoint.y;
+            let x2 = lastSecPoint.x;
+            let y2 = lastSecPoint.y;
+            let a = (y1 - y2) / (x1 - x2);
+            let b = y1 - a * x1;
+            let g = Math.pow(a, 2) + 1;
+            let h = 2 * x1 + 2 * y1 * a - 2 * a * b;
+            let i = Math.pow(x1, 2) + Math.pow(y1, 2) - 2 * y1 * b + Math.pow(b, 2) - Math.pow(l, 2) / 2;
+            let m = (h - Math.sqrt(Math.pow(h, 2) - 4 * g * i)) / (2 * g);
+            if (m < Math.min(x1, x2) || m > Math.max(x1, x2)) {
+                m = (h + Math.sqrt(Math.pow(h, 2) - 4 * g * i)) / (2 * g);
+            }
+            let n = a * m + b;
+
+            let j = 2 * m - 2 * x1;
+            let k = 2 * n - 2 * y1;
+            let o = Math.pow(x1, 2) - Math.pow(m, 2) + Math.pow(y1, 2) - Math.pow(n, 2) - Math.pow(l, 2) + Math.pow(l, 2) / 2;
+            let p = 1 + Math.pow(j / k, 2);
+            let q = -2 * x1 + (2 * j * o) / Math.pow(k, 2) + (2 * y1 * j) / k;
+            let r = Math.pow(x1, 2) + Math.pow(o / k, 2) + (2 * y1 * o) / k + Math.pow(y1, 2) - Math.pow(l, 2);
+            let x = (-q + Math.sqrt(Math.pow(q, 2) - 4 * p * r)) / (2 * p);
+            let y = (-j * x - o) / k;
+            let x3 = (-q - Math.sqrt(Math.pow(q, 2) - 4 * p * r)) / (2 * p);
+            let y3 = (-j * x3 - o) / k;
+            let pp = view.toMap({
+                x: x, y: y
+            });
+            let pp2 = view.toMap({
+                x: x2, y: y2
+            });
+            let pp3 = view.toMap({
+                x: x3, y: y3
+            });
+            let line = new Graphic.Polyline({
+                paths: [[[pp.x, pp.y], [pp2.x, pp2.y], [pp3.x, pp3.y]]],
+                "spatialReference": view.spatialReference
+            });
+            return line;
+        }
+    });
+    </script>
+</head>
+
+<body>
+<div id="viewDiv"></div>
+</body>
+</html>
