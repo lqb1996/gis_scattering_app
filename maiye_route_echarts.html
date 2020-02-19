@@ -20,14 +20,14 @@
 		#viewDiv {
 		  padding: 0;
 		  margin: 0;
-		  height: 97%;
+		  height: 50%;
 		  width: 100%;
 		}
 
 		#dataZoom {
 		  padding: 0;
 		  margin: 0;
-		  height: 3%;
+		  height: 50%;
 		  width: 100%;
 		}
 
@@ -91,7 +91,35 @@ require([
 		zoom: 3,
 		center: [122.45, 37.75]
 	});
-	
+
+	// 莫卡托投影转换成WGS84经纬度坐标
+    function mercatorTolonlat(mercator){
+        var lonlat={x:0,y:0};
+        var x = mercator.x/20037508.34*180;
+        var y = mercator.y/20037508.34*180;
+        y= 180/Math.PI*(2*Math.atan(Math.exp(y*Math.PI/180))-Math.PI/2);
+        lonlat.x = x;
+        lonlat.y = y;
+        return lonlat;
+    }
+
+	// 生成地图轨迹数据
+	function make_map_data(data) {
+        let map_data = [];
+        data.forEach(function (item, i) {
+            let m = {x: item.lon, y: item.lat};
+            m = mercatorTolonlat(m);
+            m = {
+                idx: i,
+                date: item.date,
+                lon: m.x,
+                lat: m.y
+            };
+            map_data.push(m);
+        });
+        return map_data;
+    }
+
     var geoCoordMap = {
         '上海': [121.4648, 31.2891],
         '东莞': [113.8953, 22.901],
@@ -242,10 +270,11 @@ require([
         [{name: '广州'}, {name: '常州', value: 40}],
         [{name: '广州'}, {name: '北京', value: 30}],
         [{name: '广州'}, {name: '北海', value: 20}],
-        [{name: '广州'}, {name: '海口', value: 10}]
+        [{name: '广州'}, {name: '海口', vaflue: 10}]
     ];
     // 飞机航线的样式
     var planePath = 'path://M1705.06,1318.313v-89.254l-319.9-221.799l0.073-208.063c0.521-84.662-26.629-121.796-63.961-121.491c-37.332-0.305-64.482,36.829-63.961,121.491l0.073,208.063l-319.9,221.799v89.254l330.343-157.288l12.238,241.308l-134.449,92.931l0.531,42.034l175.125-42.917l175.125,42.917l0.531-42.034l-134.449-92.931l12.238-241.308L1705.06,1318.313z';
+    // var planePath = 'path://M656.66666662 833.3l0-40.2-26.7 0 0 40.2L656.66666662 833.3z m80.4-307.9L737.06666662 445.00000001l-40.2-1e-8 0 80.4 40.2 0z m0-107.1l0-80.4-40.19999999 0-1e-8 80.4 40.2 0z m0-107.20000001l0-80.39999999-40.2 0 0 80.4 40.2-1e-8z m0-107.09999999s0.9-35.3-13.4-53.6c-11.4-14.6-26.8-13.4-26.79999999-13.4l0 67 40.19999999 0z m-133.90000001 656.10000001L603.16666661 96.89999999S632.96666662 30 696.86666662 30c41.4 0 66.9 66.9 66.9 66.9l0 896.99999999c-28.40000001-109.5-160.6-133.8-160.60000001-133.79999998z m415.00000001-575.70000001l0 40.2-66.9 0 0-84.79999999 66.9 44.59999999z m-26.8 200.9l12.7 120.50000001c2.6 22.5-16.9 35.2-16.9 35.19999999l-36 26.5L951.16666662 485.3l40.2 0z m-174 200.7l26.8 1e-8L844.16666662 190.7l-26.8 0L817.36666662 686z m66.9-147.2L884.26666662 217.4l-26.7 0 0 321.3 26.7 0 0 0.1z m40.2-66.99999999L924.46666662 257.60000001 897.66666662 257.6l0 214.2 26.8 1e-8z m13.3-240.90000001L937.76666662 678 790.66666662 806.6 790.66666662 123.8l147.1 107.1z';
     var color = ['#a6c84c', '#ffa022', '#46bee9'];
     var series = [];
     [['北京', BJData], ['上海', SHData], ['广州', GZData]].forEach(function (item, i) {
@@ -281,6 +310,91 @@ require([
                 })
             });
     });
+
+    let r = make_map_data(re_list);
+    let maiye = [];
+    let lines = [];
+    r.forEach(function (item, i) {
+        maiye.push({
+            name: item.date,
+            value: [item.lon, item.lat, item.content]
+        });
+        if(i>0){
+            lines.push([{
+                coord: [r[i-1].lon, r[i-1].lat]
+            }, {
+                coord: [r[i].lon, r[i].lat]
+            }]);
+        }
+    });
+    series.push({
+        name: '麦耶号导弹驱逐舰',
+        type: 'effectScatter',
+        coordinateSystem: 'geo',
+        zlevel: 2,
+        rippleEffect: {
+            brushType: 'stroke'
+        },
+        label: {
+            normal: {
+                show: true,
+                position: 'right',
+                formatter: '{b}'
+            }
+        },
+        symbolSize: 10,
+        itemStyle: {
+            normal: {
+                color: color[0]
+            }
+        },
+        data: maiye
+    },
+    // 尾气+透明线
+    {
+        name: '麦耶号导弹驱逐舰',
+        type: 'lines',
+        zlevel: 1,
+        effect: {
+            show: true,
+            period: 6,
+            trailLength: 0.7,
+            color: '#fff',
+            symbolSize: 3
+        },
+        lineStyle: {
+            normal: {
+                color: color[0],
+                width: 0,
+                curveness: 0.2
+            }
+        },
+        data: lines
+    },
+    // 飞机+实线
+    {
+        name: '麦耶号导弹驱逐舰',
+        type: 'lines',
+        zlevel: 2,
+        effect: {
+            show: true,
+            period: 6,
+            trailLength: 0,
+            symbol: planePath,
+            symbolSize: 15
+        },
+        lineStyle: {
+            normal: {
+                color: color[0],
+                width: 1,
+                opacity: 0.4,
+                curveness: 0.2
+            }
+        },
+        data: lines
+    }
+    );
+
     var option = {
 		title: {
             text: '麦耶号导弹驱逐舰',
@@ -288,20 +402,10 @@ require([
             textStyle: {
                 color: '#fff'
             }
-        },			
+        },
         tooltip: {
             trigger: 'item'
         },
-        // legend: {
-        //     orient: 'vertical',
-        //     top: 'bottom',
-        //     left: 'right',
-        //     data: ['北京 Top10', '上海 Top10', '广州 Top10'],
-        //     textStyle: {
-        //         color: '#fff'
-        //     },
-        //     selectedMode: 'single'
-        // },
         geo: {
             map: '',
             label: {
@@ -323,6 +427,7 @@ require([
         series: series
     };
 	options.push(option);
+	console.log(series);
 
 	let route = [];
 
@@ -338,7 +443,6 @@ require([
                     color: '#fff',
                     symbolSize: 3
             },
-
             lineStyle: {
                 normal: {
                     color: '#ff0000',
@@ -360,6 +464,36 @@ require([
         series: route
     };
 
+    option_time = {
+        dataZoom: [
+            {
+                id: 'dataZoomX',
+                type: 'slider',
+                xAxisIndex: [0],
+                filterMode: 'filter', // 设定为 'filter' 从而 X 的窗口变化会影响 Y 的范围。
+                start: 30,
+                end: 70
+            }
+        ],
+        xAxis: {
+            type: 'value'
+        },
+        yAxis: {
+            type: 'value'
+            // yAxis 中并没有使用 min、max 来显示限定轴的显示范围。
+        },
+        series: {
+            type: 'scatter',
+            data: [
+                // 第一列对应 X 轴，第二列对应 Y 轴。
+                [12, 24, 36],
+                [90, 80, 70],
+                [3, 9, 27],
+                [1, 11, 111]
+            ]
+        }
+    };
+
 	view.when(function(){
 		initChart();
 	});
@@ -371,7 +505,8 @@ require([
 			overlay.setOption(option);
 		});
 
-		let data_div = $("#dataZoom");
+		let data_div = document.getElementById("dataZoom");
+        console.log(data_div);
         let dataZoom = echarts.init(data_div);
         dataZoom.setOption(option_time);
 	}
