@@ -368,6 +368,8 @@ require([
 		let data_div = document.getElementById("dataZoom");
         let dataZoom = echarts.init(data_div);
         dataZoom.setOption(option_time);
+
+        echarts.connect([]);
 	}
 
 	//2D,3D的转换按钮
