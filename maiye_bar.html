@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html style="height: 100%">
+<head>
+    <meta charset="utf-8">
+</head>
+<body style="height: 100%; margin: 0">
+<div id="container" style="height: 100%"></div>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
+<!--<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts-gl/dist/echarts-gl.min.js"></script>-->
+<!--<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts-stat/dist/ecStat.min.js"></script>-->
+<!--<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts/dist/extension/dataTool.min.js"></script>-->
+<!--<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts/map/js/china.js"></script>-->
+<!--<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts/map/js/world.js"></script>-->
+<!--<script type="text/javascript" src="https://api.map.baidu.com/api?v=2.0&ak=xfhhaTThl11qYVrqLZii6w8qE5ggnhrY&__ec_v__=20190126"></script>-->
+<!--<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts/dist/extension/bmap.min.js"></script>-->
+<script type="text/javascript">
+    let route = '[[{"lon":"16487626.137","lat":"2073642.762","date":"2019/8/9","entity":"迈耶号导弹驱逐舰","location":"珍珠港","content":"8月9日由珍珠港出发前往西太平洋地区部署","type":"出港"},{"lon":"16366975.896","lat":"2007893.672","date":"2019/8/11"},{"lon":"16171183.838","lat":"1870310.063","date":"2019/8/13"},{"lon":"16091808.679","lat":"1727434.777","date":"2019/8/15",},{"lon":"16114562.891","lat":"1518016.650","date":"2019/8/17","entity":"迈耶号导弹驱逐舰","location":"关岛","content":"8月17日抵达关岛阿普拉海军基地，21日出港开始巡航","type":"入港"},{"lon":"15266307.028","lat":"1727434.777","date":"2019/8/22"},{"lon":"14520180.536","lat":"1965560.254","date":"2019/8/23"},{"lon":"13969846.102","lat":"2198394.053","date":"2019/8/24"},{"lon":"13407869.978","lat":"2311768.238","date":"2019/8/25","entity":"迈耶号导弹驱逐舰","location":"巴士海峡","content":"8月25日经巴士海峡进入南海","type":"闯入"},{"lon":"13186677.869","lat":"1849143.354","date":"2019/8/26"},{"lon":"13170802.837","lat":"1399350.788","date":"2019/8/27"},{"lon":"12923681.509","lat":"1057640.730","date":"2019/8/28","entity":"迈耶号导弹驱逐舰","location":"南沙美济礁、永暑礁","content":"8月28日在南沙美济礁、永暑礁附近海域开展航行自由行动","type":"闯礁"},{"lon":"12345301.186","lat":"584432.491","date":"2019/8/29"},{"lon":"11681460.275","lat":"117045.098","date":"2019/8/30","entity":"迈耶号导弹驱逐舰","location":"樟宜海军基地","content":"8月30日进入新加坡樟宜海军基地，9月4日出港","type":"入港"},{"lon":"11588591.339","lat":"621474.232","date":"2019/9/4"},{"lon":"11292521.997","lat":"1057640.730","date":"2019/9/5","entity":"迈耶号导弹驱逐舰","location":"泰国湾","content":"9月5日至10日在泰国湾参加美国-东盟首次联合海上演习","type":"演习"},{"lon":"11715591.593","lat":"896641.449","date":"2019/9/10"},{"lon":"12070133.969","lat":"933683.190","date":"2019/9/11"},{"lon":"12419384.667","lat":"1140058.603","date":"2019/9/12"},{"lon":"12558555.779","lat":"1851392.317","date":"2019/9/13","entity":"迈耶号导弹驱逐舰","location":"西沙群岛","content":"9月13日在西沙群岛开展航行自由行动","type":"闯礁"}], [{"lon":"6487626.137","lat":"73642.762","date":"2019/8/9","entity":"普雷贝尔号导弹驱逐舰","location":"珍珠港","content":"8月9日由珍珠港出发前往西太平洋地区部署","type":"出港"},{"lon":"1366975.896","lat":"200783.672","date":"2019/8/11"},{"lon":"1617113.838","lat":"870310.063","date":"2019/8/13"},{"lon":"1609108.679","lat":"727434.777","date":"2019/8/15",},{"lon":"1611452.891","lat":"118016.650","date":"2019/8/17","entity":"普雷贝尔号导弹驱逐舰","location":"关岛","content":"8月17日抵达关岛阿普拉海军基地，21日出港开始巡航","type":"入港"},{"lon":"5266307.028","lat":"727434.777","date":"2019/8/22"},{"lon":"4520180.536","lat":"196560.254","date":"2019/8/23"},{"lon":"1969846.102","lat":"219839.053","date":"2019/8/24"},{"lon":"3407869.978","lat":"231768.238","date":"2019/8/25","entity":"普雷贝尔号导弹驱逐舰","location":"巴士海峡","content":"8月25日经巴士海峡进入南海","type":"闯入"},{"lon":"3186677.869","lat":"849143.354","date":"2019/8/26"},{"lon":"1317802.837","lat":"399350.788","date":"2019/8/27"},{"lon":"2923681.509","lat":"157640.730","date":"2019/8/28","entity":"普雷贝尔号导弹驱逐舰","location":"南沙美济礁、永暑礁","content":"8月28日在南沙美济礁、永暑礁附近海域开展航行自由行动","type":"闯礁"},{"lon":"2345301.186","lat":"58442.491","date":"2019/8/29"},{"lon":"1681460.275","lat":"17045.098","date":"2019/8/30","entity":"普雷贝尔号导弹驱逐舰","location":"樟宜海军基地","content":"8月30日进入新加坡樟宜海军基地，9月4日出港","type":"入港"},{"lon":"1588591.339","lat":"21474.232","date":"2019/9/4"},{"lon":"1292521.997","lat":"157640.730","date":"2019/9/5","entity":"普雷贝尔号导弹驱逐舰","location":"泰国湾","content":"9月5日至10日在泰国湾参加美国-东盟首次联合海上演习","type":"演习"},{"lon":"1171591.593","lat":"89641.449","date":"2019/9/10"},{"lon":"1070133.969","lat":"93383.190","date":"2019/9/11"},{"lon":"1241938.667","lat":"114005.603","date":"2019/9/12"},{"lon":"1258555.779","lat":"181392.317","date":"2019/9/13","entity":"普雷贝尔号导弹驱逐舰","location":"西沙群岛","content":"9月13日在西沙群岛开展航行自由行动","type":"闯礁"}]]';
+    const re_list = eval(route);
+
+    var dom = document.getElementById("container");
+    var myChart = echarts.init(dom);
+    var app = {};
+
+    function mercatorTolonlat(mercator){
+        var lonlat={x:0,y:0};
+        var x = mercator.x/20037508.34*180;
+        var y = mercator.y/20037508.34*180;
+        y= 180/Math.PI*(2*Math.atan(Math.exp(y*Math.PI/180))-Math.PI/2);
+        lonlat.x = x;
+        lonlat.y = y;
+        return lonlat;
+    }
+
+    let ser = [];
+    let dates = [];
+
+    re_list.forEach(function (item, x) {
+        let d = [];
+        for(let i in item){
+            // 转为经纬度坐标
+            let m = {x: item[i].lon, y: item[i].lat};
+            m = mercatorTolonlat(m);
+            let date = new Date(item[i].date).toLocaleDateString();
+            d.push([date, m.x, m.y, item[i].entity]);
+        }
+        ser.push({
+            type: 'scatter',
+            name: d[0][3],
+            data: d,
+            symbolSize: function (val, param) {
+                return val[2];
+            },
+            itemStyle: {
+                color: '#FD1050',
+                borderColor: '#FD1050',
+            }
+        });
+        dates = dates.concat(d.map(function (item) {
+            return item[0];
+        }));
+    });
+    dates.sort(function (x, y) {
+        let date1 = new Date(x);
+        let date2 = new Date(y);
+        return date1>date2?1:-1;
+    });
+    var option = {
+        backgroundColor: '#21202D',
+        legend: {
+            data: ser.map(function (item) {
+                return item.name;
+            }),
+            inactiveColor: '#777',
+            textStyle: {
+                color: '#fff'
+            }
+        },
+        grid:
+            {
+                left: '10%',
+                right: '10%',
+                height: 80,
+                bottom: 80
+            },
+        dataZoom: [{
+            textStyle: {
+                color: '#8392A5'
+            },
+            handleIcon: 'M10.7,11.9v-1.3H9.3v1.3c-4.9,0.3-8.8,4.4-8.8,9.4c0,5,3.9,9.1,8.8,9.4v1.3h1.3v-1.3c4.9-0.3,8.8-4.4,8.8-9.4C19.5,16.3,15.6,12.2,10.7,11.9z M13.3,24.4H6.7V23h6.6V24.4z M13.3,19.6H6.7v-1.4h6.6V19.6z',
+            handleSize: '80%',
+            dataBackground: {
+                areaStyle: {
+                    color: '#8392A5'
+                },
+                lineStyle: {
+                    opacity: 0.8,
+                    color: '#8392A5'
+                }
+            },
+            handleStyle: {
+                color: '#fff',
+                shadowBlur: 3,
+                shadowColor: 'rgba(0, 0, 0, 0.6)',
+                shadowOffsetX: 2,
+                shadowOffsetY: 2
+            }
+        }, {
+            type: 'inside'
+        }],
+        xAxis: {
+            type: 'category',
+            data: dates,
+            axisLine: { lineStyle: { color: '#8392A5' } }
+        },
+        yAxis: {
+            scale: true,
+            axisLine: { lineStyle: { color: '#8392A5' } },
+            splitLine: { show: false }
+        },
+        series: ser,
+    };
+
+    if (option && typeof option === "object") {
+        myChart.setOption(option, true);
+    }
+</script>
+</body>
+</html>
