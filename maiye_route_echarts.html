@@ -21,14 +21,14 @@
 		#viewDiv {
 		  padding: 0;
 		  margin: 0;
-		  height: 80%;
+		  height: 20%;
 		  width: 100%;
 		}
 
 		#dataZoom {
 		  padding: 0;
 		  margin: 0;
-		  height: 20%;
+		  height: 80%;
 		  width: 100%;
 		}
 
@@ -41,7 +41,7 @@
 		#infoDiv input {
 		  border: none;
 		  box-shadow: rgba(0, 0, 0, 0.3) 0px 1px 2px;
-		}		
+		}
     </style>
 </head>
 
@@ -115,6 +115,7 @@ require([
     let lines = [];
     let dates = [];
     re_list.forEach(function (item, x) {
+        let bar = [];
         for(let i in item)
         {
             // 转为经纬度坐标
@@ -125,6 +126,7 @@ require([
                 name: item[i].entity,
                 value: [m.x, m.y, x, item[i].entity, item[i].location,item[i].type,item[i].content, date]
             });
+            bar.push([date, m.x, m.y, item[i].entity]);
             // 增加线条配置项
             if(i>0){
                 let m_1 = {x: item[i-1].lon, y: item[i-1].lat};
@@ -140,11 +142,10 @@ require([
         ser_time.push({
             type: 'scatter',
             name: item[0].entity,
-            data: maiye.map(function (item) {
-                return item.value;
-            }),
+            data: bar,
             symbolSize: function (val, param) {
-                return val[1];
+                // return val[2];
+                return 10;
             },
             itemStyle: {
                 color: '#FD1050',
@@ -152,9 +153,8 @@ require([
             }
         });
         // x轴数据
-        dates = dates.concat(maiye.map(function (item) {
-            console.log(item.value[7]);
-            return item.value[7];
+        dates = dates.concat(bar.map(function (item) {
+            return item[0];
         }));
     });
     dates.sort(function (x, y) {
@@ -163,7 +163,6 @@ require([
         return date1>date2?1:-1;
     });
 
-    console.log(ser_time);
     series.push(
         // 波纹散点
         {
@@ -367,6 +366,7 @@ require([
             axisLine: { lineStyle: { color: '#8392A5' } }
         },
         yAxis: {
+            type: 'value',
             scale: true,
             axisLine: { lineStyle: { color: '#8392A5' } },
             splitLine: { show: false }
@@ -387,7 +387,9 @@ require([
 
 		let data_div = document.getElementById("dataZoom");
         let dataZoom = echarts.init(data_div);
-        dataZoom.setOption(option_time);
+        dataZoom.setOption(option_time, true);
+
+        console.log(JSON.stringify(option_time));
 	}
 
 	//2D,3D的转换按钮
