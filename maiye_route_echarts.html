@@ -381,14 +381,16 @@ require([
             });
             c.on('mouseover', function (params) {
                 dataZoom.dispatchAction({
-                        type: 'highlight',
-                        seriesName: params.name
+                    type: 'highlight',
+                    seriesName: params.name,
+                    dataIndex: params.dataIndex
                 });
             });
             c.on('mouseout', function (params) {
                 dataZoom.dispatchAction({
                     type: 'downplay',
-                    seriesName: params.name
+                    seriesName: params.name,
+                    dataIndex: params.dataIndex
                 });
             });
         });
