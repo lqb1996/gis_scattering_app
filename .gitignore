@@ -2,4 +2,5 @@
 arcgisJsAPI
 .idea
 .DS_Store
+USNI_images
 package-lock.json
