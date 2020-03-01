@@ -3,7 +3,7 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no"/>
-    <title>maiye_route_echarts</title>
+    <title>Ronald Reagan</title>
     <link rel="stylesheet" href="https://js.arcgis.com/4.6/esri/css/main.css">
 <!--    <link rel="stylesheet" href="https://js.arcgis.com/4.14/esri/themes/light/main.css">-->
     <style>
@@ -109,8 +109,9 @@ require([
     // 航线图标的path
     // var planePath = 'path://M1705.06,1318.313v-89.254l-319.9-221.799l0.073-208.063c0.521-84.662-26.629-121.796-63.961-121.491c-37.332-0.305-64.482,36.829-63.961,121.491l0.073,208.063l-319.9,221.799v89.254l330.343-157.288l12.238,241.308l-134.449,92.931l0.531,42.034l175.125-42.917l175.125,42.917l0.531-42.034l-134.449-92.931l12.238-241.308L1705.06,1318.313z';
     var shipPath = 'M190.7 507.3333333l40.2 1e-8 0-26.7-40.2 1e-8L190.7 507.3333333z m307.9 80.40000001L578.99999999 587.73333331l1e-8-40.2-80.4 0 0 40.2z m107.1 0l80.4 0 0-40.2-80.4 0 0 40.2z m107.20000001 0l80.39999999 0 0-40.2-80.4 0 1e-8 40.2z m107.09999999 0s35.3 0.9 53.6-13.4c14.6-11.4 13.4-26.8 13.4-26.8l-67 0 0 40.2z m-656.10000001-133.90000001L927.10000001 453.8333333S994 483.63333331 994 547.53333331c0 41.4-66.9 66.9-66.9 66.89999999l-896.99999999 1e-8c109.5-28.40000001 133.8-160.6 133.79999998-160.60000001z m575.70000001 415.00000001l-40.2 0 0-66.9 84.79999999 0-44.59999999 66.9z m-200.9-26.8l-120.50000001 12.7c-22.5 2.6-35.2-16.9-35.19999999-16.9l-26.5-36L538.7 801.83333331l0 40.2z m-200.7-174l-1e-8 26.8L833.3 694.83333332l0-26.80000001L338 668.03333331z m147.2 66.9L806.6 734.93333331l0-26.7-321.3 0 0 26.7-0.1 0z m66.99999999 40.2L766.39999999 775.13333331 766.4 748.33333331l-214.2 0-1e-8 26.8z m240.90000001 13.3L346 788.43333331 217.4 641.33333331 900.2 641.33333331l-107.1 147.1z';
-    var color = ['#a6c84c', '#ffa022', '#46bee9'];
+    var color = ['#c80000', '#ffa022', '#46bee9'];
     let ser_time = [];
+    let reagan_p = [];
     let dates = [];
     let bar= [];
     let lines= [];
@@ -123,62 +124,37 @@ require([
         bar.push([date, m.x, m.y, x]);
         // x轴数据
         dates.push(date);
+        reagan_p.push({name: date, value: [m.x, m.y, date]});
     // 增加线条配置项
-    // if(x>0){
-    //     let m_1 = {x: re_list[x-1].lon, y: re_list[x-1].lat};
-    //     m_1 = mercatorTolonlat(m_1);
-    //     let line = [{
-    //         coord: [m_1.x, m_1.y]
-    //     }, {
-    //         coord: [m.x, m.y]
-    //     }];
-    //     series.push({
-    //         name: date,
-    //         type: 'lines',
-    //         zlevel: 2,
-    //         tooltip: {
-    //             trigger: 'item',
-    //             formatter: '{a}'
-    //         },
-    //         lineStyle: {
-    //             normal: {
-    //                 color: color[0],
-    //                 width: 5,
-    //                 opacity: 0.4,
-    //             }
-    //         },
-    //         data: line
-    //     });
-    // }
+    if(x>0){
+        let m_1 = {x: re_list[x-1].lon, y: re_list[x-1].lat};
+        m_1 = mercatorTolonlat(m_1);
+        lines.push([{
+            coord: [m_1.x, m_1.y]
+        }, {
+            coord: [m.x, m.y]
+        }]);
+    }
 });
+    console.log(reagan_p);
     series.push(
-        // 波纹散点
+        // 散点
         {
-            name: date,
-            type: 'effectScatter',
+            name: 'p',
+            type: 'scatter',
             coordinateSystem: 'geo',
             zlevel: 2,
             rippleEffect: {
                 brushType: 'stroke'
             },
             showEffectOn:"emphasis",
-            label: {
-                normal: {
-                    show: true,
-                    position: 'right',
-                    formatter: function (param) {
-                        return param.data.value;
-                    }
-                },
-            },
             emphasis:{
                 show: true,
             },
             tooltip: {
                 trigger: 'item',
                 formatter: function (param) {
-                    // return param.data.value[0] + ',' + param.data.value[1] + '<br/>' + param.data.value[2];
-                    return param.data.value;
+                    return param.data.value[0] + ',' + param.data.value[1] + '<br/>' + param.data.value[2];
                 }
             },
             symbolSize: 12,
@@ -187,8 +163,25 @@ require([
                     color: color[0]
                 }
             },
-            data: {name: date, value: [m.x, m.y, date]}
+            data: reagan_p
         },
+        // {
+        //     name: 'l',
+        //     type: 'lines',
+        //     zlevel: 2,
+        //     tooltip: {
+        //         trigger: 'item',
+        //         formatter: '{a}'
+        //     },
+        //     lineStyle: {
+        //         normal: {
+        //             color: color[0],
+        //             width: 5,
+        //             opacity: 0.4,
+        //         }
+        //     },
+        //     data: lines
+        // }
     );
     // 增加图表数据
     ser_time.push({
@@ -197,15 +190,11 @@ require([
         name: 'reagan',
         data: bar,
         symbolSize: function (val) {
-            return val[2]/10;
+            return val[2];
         },
         itemStyle: {
-            color: function (val) {
-                return val.data[2]===0?color[0]:color[1];
-            },
-            borderColor: function (val) {
-                return val.data[2]===0?color[0]:color[1];
-            },
+            color: color[0],
+            borderColor: color[0],
         }
     });
     dates.sort(function (x, y) {
@@ -216,7 +205,7 @@ require([
     // 总配置项
     var option = {
         title: {
-            text: '里根号航母轨迹分析',
+            text: '里根号航母态势分析',
             left: 'center',
             textStyle: {
                 color: '#fff'
