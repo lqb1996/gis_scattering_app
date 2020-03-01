@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no"/>
+    <title>maiye_route_echarts</title>
+    <link rel="stylesheet" href="https://js.arcgis.com/4.6/esri/css/main.css">
+<!--    <link rel="stylesheet" href="https://js.arcgis.com/4.14/esri/themes/light/main.css">-->
+    <style>
+        html, body{
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            background-color: #FFF;
+            overflow: hidden;
+            font-family: "Trebuchet MS", sans-serif;
+        }
+		#viewDiv {
+		  padding: 0;
+		  margin: 0;
+		  height: 80%;
+		  width: 100%;
+		}
+
+		#dataZoom {
+		  padding: 0;
+		  margin: 0;
+		  height: 200px;
+		  width: 100%;
+		}
+
+		#infoDiv {
+		  position: absolute;
+		  top: 15px;
+		  left: 60px;
+		}
+
+		#infoDiv input {
+		  border: none;
+		  box-shadow: rgba(0, 0, 0, 0.3) 0px 1px 2px;
+		}
+    </style>
+</head>
+
+<body>
+    <div id="viewDiv"></div>
+    <div id="infoDiv">
+    <input class="esri-component esri-widget-button esri-widget esri-interactive" type="button"
+      id="switch-btn" value="3D">
+    </div><br/>
+    <div id="dataZoom"></div>
+<script src="./echarts3Layer/echarts3Extent.js"></script>
+<script type="text/javascript" src="./echarts4.js"></script>
+<script>
+var package_path = window.location.href.substring(0, window.location.href.lastIndexOf('/'));
+    var dojoConfig = {
+        parseOnLoad: true,
+        packages: [{
+            "name": "src",
+            "location": package_path+"/echarts3Layer/"
+        }]
+    };
+</script>
+<script src="https://js.arcgis.com/4.6/"></script>
+<!--<script src="https://js.arcgis.com/4.14/"></script>-->
+<script>
+var map,view,options=[];
+let msg = "[{'lon': '12618290.474362794', 'lat': '2075167.833829727', 'words': 'Ronald reagan CSG', 'time': '2017-10-03 07:41:00'}, {'lon': '12612669.59189916', 'lat': '2082464.1157780848', 'words': 'Ronald reagan CSG', 'time': '2017-10-10 11:44:00'}, {'lon': '15157648.999169234', 'lat': '4131415.8128608093', 'words': 'Ronald Reagan CSG', 'time': '2017-10-16 11:31:00'}, {'lon': '14470703.744774837', 'lat': '3740898.8075865116', 'words': 'Ronald Reagan CSg', 'time': '2017-10-23 12:19:00'}, {'lon': '14580523.036118235', 'lat': '3589224.4076910987', 'words': 'Ronald Reagan CSG', 'time': '2017-10-26 16:38:00'}, {'lon': '14976192.854048025', 'lat': '3826620.59951769', 'words': 'Ronald Reagan CSg', 'time': '2017-10-30 13:27:00'}, {'lon': '14994798.438877795', 'lat': '3865385.4619560465', 'words': 'Ronald reagan CSG', 'time': '2017-11-06 21:09:00'}, {'lon': '15028785.099634025', 'lat': '3954118.6218542475', 'words': 'Ronald reagan CSG', 'time': '2017-11-20 15:02:00'}, {'lon': '20127542.303650346', 'lat': '1853243.631063059', 'words': 'Ronald Reagan CSG (In port', 'time': '2017-11-27 14:18:00'}, {'lon': '15501910.761706624', 'lat': '3486736.764367312', 'words': 'Ronald reagan CSg', 'time': '2017-12-05 09:49:00'}, {'lon': '15472862.999100935', 'lat': '3479497.994201284', 'words': 'Ronald Reagan CSg', 'time': '2017-12-11 10:37:00'}, {'lon': '15486550.965110693', 'lat': '3506921.4907545596', 'words': 'Ronald reagan CSg', 'time': '2017-12-18 12:13:00'}, {'lon': '15510072.896152828', 'lat': '3486105.5609411635', 'words': 'Ronald reagan CSG', 'time': '2018-01-02 12:42:00'}, {'lon': '15481979.382070925', 'lat': '3497765.5279985666', 'words': 'Ronald reagan CSG', 'time': '2018-01-08 13:09:00'}, {'lon': '15505509.599845652', 'lat': '3476981.923543591', 'words': 'Ronald Reagan CSG', 'time': '2018-01-16 10:47:00'}, {'lon': '15472862.999100935', 'lat': '3479497.994201284', 'words': 'Ronald Reagan CSG', 'time': '2018-01-22 12:38:00'}, {'lon': '15481979.382070925', 'lat': '3497765.5279985666', 'words': 'Ronald reagan CSG(In port)', 'time': '2018-01-29 11:20:00'}, {'lon': '15442938.746895347', 'lat': '3453455.152523976', 'words': 'Ronald reagan csg', 'time': '2018-02-22 11:04:00'}, {'lon': '15448364.71623763', 'lat': '3481374.560466096', 'words': 'Rosald reagan ts(', 'time': '2018-02-26 11:12:00'}, {'lon': '15444740.239518736', 'lat': '3491127.201078221', 'words': 'onald Reagan(SG', 'time': '2018-03-12 12:16:00'}, {'lon': '15469249.50782976', 'lat': '3489251.576841004', 'words': 'Ronald reagan (Si)', 'time': '2018-03-26 11:03:00'}, {'lon': '15475777.683332998', 'lat': '3536367.4229315445', 'words': 'Ronald Redd(SG', 'time': '2018-04-02 12:26:00'}, {'lon': '15485582.67627279', 'lat': '3487996.1696950234', 'words': 'Ronald reagan CSg', 'time': '2018-04-09 14:01:00'}, {'lon': '15631298.108069379', 'lat': '3659709.78735568', 'words': 'Ronald reagan csg', 'time': '2018-04-16 13:16:00'}, {'lon': '14742160.308392081', 'lat': '3569331.4088618383', 'words': 'Ronald reagan csg', 'time': '2018-04-16 13:16:00'}, {'lon': '15500955.251106251', 'lat': '3467873.030606862', 'words': 'Ronald Reagan CSG', 'time': '2018-04-23 10:09:00'}, {'lon': '15514645.140821654', 'lat': '3495243.9736128375', 'words': 'Ronald Reagan CSG', 'time': '2018-04-30 11:15:00'}, {'lon': '15495720.918269131', 'lat': '3525277.96204748', 'words': 'Ronald Reagan cSg', 'time': '2018-05-07 10:30:00'}, {'lon': '15500955.251106251', 'lat': '3467873.030606862', 'words': 'Ronald reagan csg', 'time': '2018-05-14 10:28:00'}, {'lon': '15495720.918269131', 'lat': '3525277.96204748', 'words': 'Ronald Reagan CSg', 'time': '2018-05-21 10:38:00'}, {'lon': '15479195.652169097', 'lat': '3441262.28778686', 'words': 'Ronald Reagan cSg', 'time': '2018-05-28 10:26:00'}, {'lon': '15413728.396206696', 'lat': '3055784.992525745', 'words': 'Ronald reagan CSg', 'time': '2018-06-04 10:42:00'}, {'lon': '14803442.043244276', 'lat': '3250344.5174204', 'words': 'Ronald reagan csg', 'time': '2018-06-11 11:39:00'}, {'lon': '15216063.466553617', 'lat': '2906531.7818071283', 'words': 'Ronald reagan csg', 'time': '2018-06-11 11:39:00'}, {'lon': '15545218.289219376', 'lat': '1121108.098788973', 'words': 'Ronald Reagan CSg', 'time': '2018-06-18 10:39:00'}, {'lon': '13196408.74218363', 'lat': '1262242.5867685676', 'words': 'Ronald Reagan CSG', 'time': '2018-06-25 11:44:00'}, {'lon': '13213801.05441318', 'lat': '1267764.1973208748', 'words': 'Ronald reagan CSG', 'time': '2018-07-02 10:49:00'}, {'lon': '19207334.49139585', 'lat': '2186827.1162047163', 'words': 'Ronald reagan cSg', 'time': '2018-07-09 11:15:00'}, {'lon': '13986704.02513035', 'lat': '2374707.6496030614', 'words': 'Ronald reagan cSg', 'time': '2018-07-09 11:15:00'}, {'lon': '13980530.289822858', 'lat': '2359914.4467754476', 'words': 'Ronald Reagan CSG', 'time': '2018-07-16 13:28:00'}, {'lon': '14495687.979944285', 'lat': '3351727.244056333', 'words': 'Wasp ESG Ronald Reagan CSG', 'time': '2018-07-23 09:11:00'}, {'lon': '14487441.122552399', 'lat': '3352235.9969214685', 'words': 'sp ESG Ronald Reagan CSG', 'time': '2018-07-30 11:20:00'}, {'lon': '15797080.319984931', 'lat': '3617060.7376893125', 'words': 'Ronald reagan csg', 'time': '2018-08-06 11:35:00'}, {'lon': '15846058.241130028', 'lat': '3613027.488385547', 'words': 'Ronald Reagan CSg', 'time': '2018-08-13 12:57:00'}, {'lon': '14175886.910819028', 'lat': '3226362.49987128', 'words': 'Ronald reagan CSg', 'time': '2018-08-20 09:23:00'}, {'lon': '14175886.910819028', 'lat': '3226362.49987128', 'words': 'Ronald reagan cSg', 'time': '2018-08-27 11:11:00'}, {'lon': '14134074.40509184', 'lat': '1548750.8135174103', 'words': 'Ronald Reagan CSG', 'time': '2018-09-04 11:43:00'}, {'lon': '14139648.05164608', 'lat': '1587492.4060081132', 'words': 'Ronald Reagan CSG', 'time': '2018-09-10 11:55:00'}, {'lon': '14877109.274161626', 'lat': '1396566.3764185645', 'words': 'Ronald Reagan CSG', 'time': '2018-09-17 11:36:00'}, {'lon': '15779294.847340245', 'lat': '1036938.3654730096', 'words': 'Ronald Reagan CSG', 'time': '2018-09-24 12:09:00'}, {'lon': '15784766.382348921', 'lat': '1054519.3080295958', 'words': 'Ronald Reagan CSG', 'time': '2018-10-01 11:30:00'}, {'lon': '15779294.847340245', 'lat': '1036938.3654730096', 'words': 'Ronald Reagan CSG', 'time': '2018-10-08 12:14:00'}, {'lon': '14384309.186881322', 'lat': '3349381.064423412', 'words': 'Ronald Reagan CSG', 'time': '2018-10-15 12:46:00'}, {'lon': '14539494.810740981', 'lat': '2662788.6244349554', 'words': 'Ronald Reagan cSg', 'time': '2018-10-22 12:16:00'}, {'lon': '14568008.759696964', 'lat': '2725788.8830278963', 'words': 'Ronald reagan CSg', 'time': '2018-10-29 11:40:00'}, {'lon': '15211932.576716844', 'lat': '2966674.222413052', 'words': 'Ronald Reagan CSG', 'time': '2018-11-05 13:41:00'}, {'lon': '14092746.626516107', 'lat': '2794775.5493129306', 'words': 'Ronald Reagan CSg', 'time': '2018-11-13 10:31:00'}, {'lon': '13230173.73862319', 'lat': '1802812.5977772772', 'words': 'Ronald Reagan csg', 'time': '2018-11-19 07:55:00'}, {'lon': '13117581.837438915', 'lat': '1965240.5042818561', 'words': 'Ronald reagan CSG', 'time': '2018-11-26 09:45:00'}, {'lon': '15198818.42854591', 'lat': '2715807.9484905787', 'words': 'Ronald reagan CSg', 'time': '2018-12-03 11:30:00'}, {'lon': '5899123.820512857', 'lat': '2771607.9269481003', 'words': 'Ronald reagan CSg', 'time': '2018-12-03 11:30:00'}, {'lon': '16023016.137518909', 'lat': '3857167.575183429', 'words': 'Ronald Reagan CSG', 'time': '2018-12-10 10:43:00'}, {'lon': '16073909.487800803', 'lat': '3955493.557356067', 'words': 'Ronald Reagan CSg', 'time': '2018-12-17 11:10:00'}, {'lon': '16053441.901032228', 'lat': '3915968.521373246', 'words': 'Ronald Reagan CSG', 'time': '2018-12-27 11:11:00'}, {'lon': '16033121.318272684', 'lat': '3876703.338216815', 'words': 'Ronald reagan csg', 'time': '2018-12-31 08:08:00'}, {'lon': '16033121.318272684', 'lat': '3876703.338216815', 'words': 'Ronald reagan csg', 'time': '2019-01-14 10:19:00'}, {'lon': '16033121.318272684', 'lat': '3876703.338216815', 'words': 'Ronald reagan csg', 'time': '2019-01-22 11:27:00'}, {'lon': '16048347.975701164', 'lat': '3906127.941414794', 'words': 'Ronald Reagan CSG', 'time': '2019-01-28 12:35:00'}, {'lon': '16033121.318272684', 'lat': '3876703.338216815', 'words': 'Ronald reagan CSg', 'time': '2019-02-04 11:48:00'}, {'lon': '16033121.318272684', 'lat': '3876703.338216815', 'words': 'Ronald reagan csg', 'time': '2019-02-11 13:52:00'}, {'lon': '16033121.318272684', 'lat': '3876703.338216815', 'words': 'Ronald reagan CSG', 'time': '2019-02-19 13:51:00'}, {'lon': '16033121.318272684', 'lat': '3876703.338216815', 'words': 'Ronald reagan CSg', 'time': '2019-02-25 11:32:00'}, {'lon': '16033121.318272684', 'lat': '3876703.338216815', 'words': 'Ronald reagan CSg', 'time': '2019-03-04 10:42:00'}, {'lon': '16033121.318272684', 'lat': '3876703.338216815', 'words': 'Ronald reagan CSG', 'time': '2019-03-11 11:16:00'}, {'lon': '16033121.318272684', 'lat': '3876703.338216815', 'words': 'Ronald Reagan CSg', 'time': '2019-03-18 11:02:00'}, {'lon': '16033121.318272684', 'lat': '3876703.338216815', 'words': 'Ronald Reagan CSg', 'time': '2019-03-25 11:53:00'}, {'lon': '16033121.318272684', 'lat': '3876703.338216815', 'words': 'Ronald Reagan CSG', 'time': '2019-04-01 12:07:00'}, {'lon': '16033121.318272684', 'lat': '3876703.338216815', 'words': 'Ronald Reagan CSG', 'time': '2019-04-08 10:58:00'}, {'lon': '16033121.318272684', 'lat': '3876703.338216815', 'words': 'Ronald Reagan CSG', 'time': '2019-04-15 10:49:00'}, {'lon': '16033121.318272684', 'lat': '3876703.338216815', 'words': 'Ronald reagan CSG', 'time': '2019-04-22 12:12:00'}, {'lon': '16033121.318272684', 'lat': '3876703.338216815', 'words': 'Ronald reagan CSG', 'time': '2019-05-06 09:32:00'}, {'lon': '16352771.6164123', 'lat': '3848549.8459151424', 'words': 'Ronald reagan CSg', 'time': '2019-05-13 11:53:00'}, {'lon': '15696210.530807156', 'lat': '3703700.7757328227', 'words': 'Ronald Reagan CSG', 'time': '2019-05-20 11:48:00'}, {'lon': '16914018.815223698', 'lat': '4396183.0949241035', 'words': 'Ronald reagan CSG', 'time': '2019-05-27 11:14:00'}, {'lon': '14429146.434401948', 'lat': '2282014.3325100355', 'words': 'Ronald reagan csg', 'time': '2019-06-03 09:41:00'}, {'lon': '5078027.648392852', 'lat': '1137625.1190787107', 'words': 'Ronald reagan CSG', 'time': '2019-06-10 10:48:00'}, {'lon': '13976830.011888813', 'lat': '1622111.9714409672', 'words': 'Ronald Reagan CSG', 'time': '2019-06-17 12:40:00'}, {'lon': '13976830.011888813', 'lat': '1622111.9714409672', 'words': 'Ronald reagan CSG', 'time': '2019-06-24 11:26:00'}, {'lon': '16464419.92995121', 'lat': '-167632.95575638488', 'words': 'Ronald reagan CSG', 'time': '2019-07-01 11:40:00'}, {'lon': '17620180.392050687', 'lat': '-1788721.3831594177', 'words': 'Ronald Reagan CSG', 'time': '2019-07-08 13:39:00'}, {'lon': '16838661.50394817', 'lat': '-2043502.5440371223', 'words': 'Ronald Reagan CSG', 'time': '2019-07-15 12:49:00'}, {'lon': '17110373.378771987', 'lat': '-2263832.0916791894', 'words': 'Ronald Reagan CSG', 'time': '2019-07-22 12:51:00'}, {'lon': '15906939.486030187', 'lat': '902257.3652129434', 'words': 'Ronald Reagan CSG', 'time': '2019-07-29 11:25:00'}, {'lon': '7264806.39196251', 'lat': '2425721.3461199068', 'words': 'Abraham Lincoln csg Ronald Reagan CSG', 'time': '2019-08-05 11:35:00'}, {'lon': '14336457.594823737', 'lat': '939862.6582921669', 'words': 'Ronald Reagan CSg', 'time': '2019-08-12 10:52:00'}, {'lon': '14600400.9166389', 'lat': '2339156.4220746085', 'words': 'Ronald reagan csg', 'time': '2019-08-19 11:42:00'}, {'lon': '15759942.866804663', 'lat': '3728260.0504115447', 'words': 'Ronald reagan CSg', 'time': '2019-08-26 10:01:00'}, {'lon': '15759942.866804663', 'lat': '3728260.0504115447', 'words': 'Ronald reagan cSg', 'time': '2019-09-03 10:41:00'}, {'lon': '15759942.866804663', 'lat': '3728260.0504115447', 'words': 'Ronald reagan csg', 'time': '2019-09-09 11:37:00'}, {'lon': '14719723.35856716', 'lat': '2839754.7948746905', 'words': 'Ronald reagan CSG', 'time': '2019-09-16 11:49:00'}, {'lon': '13914191.326300059', 'lat': '1625256.025518749', 'words': 'Ronald Reagan CSG', 'time': '2019-09-23 12:21:00'}, {'lon': '13091606.100743707', 'lat': '1397190.5389762', 'words': 'Ronald Reagan CSg', 'time': '2019-09-30 10:26:00'}, {'lon': '13091606.100743707', 'lat': '1397190.5389762', 'words': 'Ronald Reagan CSg', 'time': '2019-10-07 10:37:00'}]";
+const re_list = eval(msg);
+
+require([
+    "esri/Map",
+    'esri/views/MapView',
+    "esri/views/SceneView",
+    "src/Echarts3Layer",
+    "dojo/domReady!"
+], function (
+    Map,
+    MapView,
+    SceneView,
+    Echarts3Layer
+) {
+	var switchButton = document.getElementById("switch-btn");
+	map = new Map({
+		basemap: "satellite",
+		ground: "world-elevation"
+	});
+	view = new MapView({
+		map: map,
+		container: 'viewDiv',
+		zoom: 3,
+		center: [122.45, 37.75]
+	});
+
+	// 莫卡托投影转换成WGS84经纬度坐标
+    function mercatorTolonlat(mercator){
+        var lonlat={x:0,y:0};
+        var x = mercator.x/20037508.34*180;
+        var y = mercator.y/20037508.34*180;
+        y= 180/Math.PI*(2*Math.atan(Math.exp(y*Math.PI/180))-Math.PI/2);
+        lonlat.x = x;
+        lonlat.y = y;
+        return lonlat;
+    }
+
+    // 航线图标的path
+    // var planePath = 'path://M1705.06,1318.313v-89.254l-319.9-221.799l0.073-208.063c0.521-84.662-26.629-121.796-63.961-121.491c-37.332-0.305-64.482,36.829-63.961,121.491l0.073,208.063l-319.9,221.799v89.254l330.343-157.288l12.238,241.308l-134.449,92.931l0.531,42.034l175.125-42.917l175.125,42.917l0.531-42.034l-134.449-92.931l12.238-241.308L1705.06,1318.313z';
+    var shipPath = 'M190.7 507.3333333l40.2 1e-8 0-26.7-40.2 1e-8L190.7 507.3333333z m307.9 80.40000001L578.99999999 587.73333331l1e-8-40.2-80.4 0 0 40.2z m107.1 0l80.4 0 0-40.2-80.4 0 0 40.2z m107.20000001 0l80.39999999 0 0-40.2-80.4 0 1e-8 40.2z m107.09999999 0s35.3 0.9 53.6-13.4c14.6-11.4 13.4-26.8 13.4-26.8l-67 0 0 40.2z m-656.10000001-133.90000001L927.10000001 453.8333333S994 483.63333331 994 547.53333331c0 41.4-66.9 66.9-66.9 66.89999999l-896.99999999 1e-8c109.5-28.40000001 133.8-160.6 133.79999998-160.60000001z m575.70000001 415.00000001l-40.2 0 0-66.9 84.79999999 0-44.59999999 66.9z m-200.9-26.8l-120.50000001 12.7c-22.5 2.6-35.2-16.9-35.19999999-16.9l-26.5-36L538.7 801.83333331l0 40.2z m-200.7-174l-1e-8 26.8L833.3 694.83333332l0-26.80000001L338 668.03333331z m147.2 66.9L806.6 734.93333331l0-26.7-321.3 0 0 26.7-0.1 0z m66.99999999 40.2L766.39999999 775.13333331 766.4 748.33333331l-214.2 0-1e-8 26.8z m240.90000001 13.3L346 788.43333331 217.4 641.33333331 900.2 641.33333331l-107.1 147.1z';
+    var color = ['#a6c84c', '#ffa022', '#46bee9'];
+    let ser_time = [];
+    let dates = [];
+    let bar= [];
+    let lines= [];
+    let series = [];
+    re_list.forEach(function (item, x) {
+        let date = new Date(item['time']).toLocaleDateString();
+        // 转为经纬度坐标
+        let m = {x: item.lon, y: item.lat};
+        m = mercatorTolonlat(m);
+        bar.push([date, m.x, m.y, x]);
+        // x轴数据
+        dates.push(date);
+    // 增加线条配置项
+    // if(x>0){
+    //     let m_1 = {x: re_list[x-1].lon, y: re_list[x-1].lat};
+    //     m_1 = mercatorTolonlat(m_1);
+    //     let line = [{
+    //         coord: [m_1.x, m_1.y]
+    //     }, {
+    //         coord: [m.x, m.y]
+    //     }];
+    //     series.push({
+    //         name: date,
+    //         type: 'lines',
+    //         zlevel: 2,
+    //         tooltip: {
+    //             trigger: 'item',
+    //             formatter: '{a}'
+    //         },
+    //         lineStyle: {
+    //             normal: {
+    //                 color: color[0],
+    //                 width: 5,
+    //                 opacity: 0.4,
+    //             }
+    //         },
+    //         data: line
+    //     });
+    // }
+});
+    series.push(
+        // 波纹散点
+        {
+            name: date,
+            type: 'effectScatter',
+            coordinateSystem: 'geo',
+            zlevel: 2,
+            rippleEffect: {
+                brushType: 'stroke'
+            },
+            showEffectOn:"emphasis",
+            label: {
+                normal: {
+                    show: true,
+                    position: 'right',
+                    formatter: function (param) {
+                        return param.data.value;
+                    }
+                },
+            },
+            emphasis:{
+                show: true,
+            },
+            tooltip: {
+                trigger: 'item',
+                formatter: function (param) {
+                    // return param.data.value[0] + ',' + param.data.value[1] + '<br/>' + param.data.value[2];
+                    return param.data.value;
+                }
+            },
+            symbolSize: 12,
+            itemStyle: {
+                normal: {
+                    color: color[0]
+                }
+            },
+            data: {name: date, value: [m.x, m.y, date]}
+        },
+    );
+    // 增加图表数据
+    ser_time.push({
+        type: 'effectScatter',
+        showEffectOn:"emphasis",
+        name: 'reagan',
+        data: bar,
+        symbolSize: function (val) {
+            return val[2]/10;
+        },
+        itemStyle: {
+            color: function (val) {
+                return val.data[2]===0?color[0]:color[1];
+            },
+            borderColor: function (val) {
+                return val.data[2]===0?color[0]:color[1];
+            },
+        }
+    });
+    dates.sort(function (x, y) {
+        let date1 = new Date(x);
+        let date2 = new Date(y);
+        return date1>date2?1:-1;
+    });
+    // 总配置项
+    var option = {
+        title: {
+            text: '里根号航母轨迹分析',
+            left: 'center',
+            textStyle: {
+                color: '#fff'
+            }
+        },
+        geo: {
+            map: '',
+            label: {
+                emphasis: {
+                    show: false
+                }
+            },
+            roam: true,
+            itemStyle: {
+                normal: {
+                    areaColor: '#323c48',
+                    borderColor: '#404a59'
+                },
+                emphasis: {
+                    areaColor: '#2a333d'
+                }
+            },
+        },
+        tooltip: {
+            trigger: 'item'
+        },
+        emphasis:{
+            show: true
+        },
+        series: series
+    };
+
+    let option_time = {
+        backgroundColor: '#21202D',
+        grid:
+            {
+                left: '10%',
+                right: '10%',
+                height: 80,
+                bottom: 80
+            },
+        dataZoom: [{
+            textStyle: {
+                color: '#8392A5'
+            },
+            handleIcon: shipPath,
+            handleSize: '150%',
+            dataBackground: {
+                areaStyle: {
+                    color: '#8392A5'
+                },
+                lineStyle: {
+                    opacity: 0.8,
+                    color: '#8392A5'
+                }
+            },
+            handleStyle: {
+                color: '#fff',
+                shadowBlur: 3,
+                shadowColor: 'rgba(0, 0, 0, 0.6)',
+                shadowOffsetX: 2,
+                shadowOffsetY: 2
+            }
+        }, {
+            type: 'inside'
+        }],
+        xAxis: {
+            type: 'category',
+            data: dates,
+            axisLine: { lineStyle: { color: '#8392A5' } }
+        },
+        yAxis: {
+            type: 'value',
+            scale: true,
+            axisLine: { lineStyle: { color: '#8392A5' } },
+            splitLine: { show: false }
+        },
+        series: ser_time,
+    };
+
+	view.when(function(){
+		initChart();
+	});
+	function initChart(){
+        var overlay = new Echarts3Layer(view, echarts,'chartId_idx');
+        var chartsContainer = overlay.getEchartsContainer();
+        overlay.initECharts(chartsContainer);
+        overlay.setOption(option);
+
+		let data_div = document.getElementById("dataZoom");
+        let dataZoom = echarts4.init(data_div);
+        dataZoom.setOption(option_time, true);
+	}
+
+	//2D,3D的转换按钮
+	switchButton.onclick=function(){
+	    view.container = null;
+	    if(switchButton.value == "2D"){
+			view = new MapView({
+				map: map,
+				container: 'viewDiv',
+				zoom: 5,
+				center: [122.45, 37.75]
+			});
+			switchButton.value='3D';
+		}else{
+			view = new SceneView({
+				map: map,
+				container: 'viewDiv',
+				zoom: 5,
+				center: [122.45, 37.75]
+			});
+			switchButton.value='2D';
+		}
+		view.when(function(){
+			initChart();
+		});
+	}
+});
+</script>
+</body>
+</html>
