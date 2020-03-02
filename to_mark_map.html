@@ -334,8 +334,6 @@ require([
             let o = dataZoom.getOption();
             let s = o.series;
             s[params.data[3]].data[0][2] = s[params.data[3]].data[0][2]===0?1:0;
-            // console.log(s[0].data);
-            // console.log(s[params.data[3]].data);
             o.series = s;
             dataZoom.setOption(o);
             overlay.setOption(show_points_on_map(params.data[3]));
