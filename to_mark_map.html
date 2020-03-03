@@ -76,9 +76,9 @@
       id="switch-btn" value="3D">
   </div>
 <div id="upPanel">
-    <textarea id="label_data" style="width: 100%; height: auto;" warp="soft"></textarea>
-    <input type="button" value="提交" onclick="sub_click()"/>
-    <input type="button" value="输出" onclick="fin()"/><br/>
+    <textarea id="label_data" style="width: 100%; height: auto;" onpropertychange="sub_click();" oninput="sub_click();" warp="soft"></textarea>
+<!--    <input type="button" value="提交" onclick="sub_click()"/>-->
+    <input type="button" value="提交" onclick="fin()"/><br/>
     <div id="dataZoom"></div>
 </div>
 <script src="./echarts3Layer/echarts3Extent.js"></script>
@@ -145,20 +145,32 @@ require([
     let ser_time = [];
     let dates = [];
 
-    function show_points_on_map(idx){
+    function show_points_on_map(idx, isString=false){
         let series = [];
         let r = re_list[idx];
+        if (isString){
+            r = idx;
+        }
         let points = [];
         let date = new Date(r['time']).toLocaleDateString();
         for(let i in r['points_list'])
         {
-            // 转为经纬度坐标
-            let m = {x: r['points_list'][i].lon, y: r['points_list'][i].lat};
-            m = mercatorTolonlat(m);
-            points.push({
-                name: r['time'],
-                value: [m.x, m.y, idx, i, r['points_list'][i].words, date]
-            });
+            let repit_location = false;
+            for(let j=0;j<i&&repit_location===false;j++){
+                if(r['points_list'][j].lon===r['points_list'][i].lon){
+                    repit_location = true;
+                    points[j].value[4].push(r['points_list'][i].words);
+                }
+            }
+            if(repit_location===false){
+                // 转为经纬度坐标
+                let m = {x: r['points_list'][i].lon, y: r['points_list'][i].lat};
+                m = mercatorTolonlat(m);
+                points.push({
+                    name: r['time'],
+                    value: [m.x, m.y, idx, i, [r['points_list'][i].words], date]
+                });
+            }
         }
         // 遍历增加每组数据
         series.push(
@@ -175,10 +187,22 @@ require([
                 label: {
                     normal: {
                         show: true,
-                        fontSize: 40,
                         position: 'right',
+                        textStyle: {
+                            color: '#fff',
+                            fontSize :24
+                        },
                         formatter: function (param) {
-                            return param.data.value[4];
+                            let str = '';
+                            for(let i in param.data.value[4]){
+                                if(i<=0){
+                                    str = param.data.value[4][i];
+                                }
+                                else {
+                                    str += '|' + param.data.value[4][i];
+                                }
+                            }
+                            return str;
                         }
                     }
                 },
@@ -346,15 +370,17 @@ require([
             overlay.setOption(show_points_on_map(params.data[3]));
             document.getElementById('label_data').value=JSON.stringify(re_list[params.data[3]]);
         });
-
+        // 动态刷新标注的数据
         sub_click = function(){
             let s = document.getElementById('label_data').value;
             s = eval('('+s+')');
-            labeled_data.push(s);
-            alert(JSON.stringify(s));
+            overlay.setOption(show_points_on_map(s, true));
         };
-
+        // 提交确定后的数据
         fin = function(){
+            let s = document.getElementById('label_data').value;
+            s = eval('('+s+')');
+            labeled_data.push(s);
             console.log(JSON.stringify(labeled_data));
         };
 	}
