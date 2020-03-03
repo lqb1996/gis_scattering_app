@@ -64,7 +64,7 @@
 <body>
     <div id="viewDiv"></div>
 <div id="imgPanel">
-    <img style="width: 100%; height: 100%;" src="USNI_images/April 1, 2019 12:07 PM">
+    <img id="labeled_img" style="width: 100%; height: 100%;" src="">
 </div>
   <div id="infoDiv">
     <input class="esri-component esri-widget-button esri-widget esri-interactive" type="button"
@@ -170,14 +170,12 @@ require([
                 label: {
                     normal: {
                         show: true,
+                        fontSize: 40,
                         position: 'right',
                         formatter: function (param) {
-                            if(param.data.value[4] !== undefined){
-                                return param.data.value[4];
-                            }
-                            return ' ';
+                            return param.data.value[4];
                         }
-                    },
+                    }
                 },
                 emphasis:{
                     show: true,
@@ -317,7 +315,7 @@ require([
         series: ser_time,
     };
 
-	view.when(function(){
+    view.when(function(){
 		initChart();
 	});
 	function initChart(){
@@ -331,6 +329,10 @@ require([
         let dataZoom = echarts4.init(data_div);
         dataZoom.setOption(option_time, true);
         dataZoom.on('click', function (params) {
+            let select_img = './USNI_images/' + re_list[params.data[3]].time;
+            let i = document.getElementById('labeled_img');
+            i.setAttribute('src', select_img);
+
             let o = dataZoom.getOption();
             let s = o.series;
             s[params.data[3]].data[0][2] = s[params.data[3]].data[0][2]===0?1:0;
