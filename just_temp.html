@@ -28,7 +28,7 @@
 		#dataZoom {
 		  padding: 0;
 		  margin: 0;
-		  height: 200px;
+		  height: 20%;
 		  width: 100%;
 		}
 
@@ -42,6 +42,11 @@
 		  border: none;
 		  box-shadow: rgba(0, 0, 0, 0.3) 0px 1px 2px;
 		}
+
+        .esri-ui-manual-container > .esri-component {
+            position: absolute;
+            display: none;
+        }
     </style>
 </head>
 
@@ -50,7 +55,7 @@
     <div id="infoDiv">
     <input class="esri-component esri-widget-button esri-widget esri-interactive" type="button"
       id="switch-btn" value="3D">
-    </div><br/>
+    </div>
     <div id="dataZoom"></div>
 <script src="./echarts3Layer/echarts3Extent.js"></script>
 <script type="text/javascript" src="./echarts4.js"></script>
