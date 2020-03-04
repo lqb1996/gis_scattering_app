@@ -117,7 +117,7 @@ require([
     let lines= [];
     let series = [];
     re_list.forEach(function (item, x) {
-        if(x<26){
+        if(x<120){
         let date = new Date(item['time']).toLocaleDateString();
         // 转为经纬度坐标
         let m = {x: item.lon, y: item.lat};
