@@ -366,7 +366,6 @@ require([
 			overlay.initECharts(chartsContainer);
 			overlay.setOption(option);
 			layer_list.push(overlay);
-
 		});
 
 		let data_div = document.getElementById("dataZoom");
@@ -378,9 +377,14 @@ require([
 
         layer_list.forEach(function (item, i) {
             let c = item.getECharts();
-            echarts4.connect(c);
             c.on('click', function (params) {
                 console.log(params);
+            });
+            c.on('legendselectchanged', function (params) {
+                dataZoom.dispatchAction({
+                    type: 'legendToggleSelect',
+                    name: params.name
+                });
             });
             c.on('mouseover', function (params) {
                 dataZoom.dispatchAction({
