@@ -112,6 +112,7 @@ require([
     }
 
     // 航线图标的path
+    // var planePath = 'path://M1705.06,1318.313v-89.254l-319.9-221.799l0.073-208.063c0.521-84.662-26.629-121.796-63.961-121.491c-37.332-0.305-64.482,36.829-63.961,121.491l0.073,208.063l-319.9,221.799v89.254l330.343-157.288l12.238,241.308l-134.449,92.931l0.531,42.034l175.125-42.917l175.125,42.917l0.531-42.034l-134.449-92.931l12.238-241.308L1705.06,1318.313z';
     var shipPath = 'M190.7 507.3333333l40.2 1e-8 0-26.7-40.2 1e-8L190.7 507.3333333z m307.9 80.40000001L578.99999999 587.73333331l1e-8-40.2-80.4 0 0 40.2z m107.1 0l80.4 0 0-40.2-80.4 0 0 40.2z m107.20000001 0l80.39999999 0 0-40.2-80.4 0 1e-8 40.2z m107.09999999 0s35.3 0.9 53.6-13.4c14.6-11.4 13.4-26.8 13.4-26.8l-67 0 0 40.2z m-656.10000001-133.90000001L927.10000001 453.8333333S994 483.63333331 994 547.53333331c0 41.4-66.9 66.9-66.9 66.89999999l-896.99999999 1e-8c109.5-28.40000001 133.8-160.6 133.79999998-160.60000001z m575.70000001 415.00000001l-40.2 0 0-66.9 84.79999999 0-44.59999999 66.9z m-200.9-26.8l-120.50000001 12.7c-22.5 2.6-35.2-16.9-35.19999999-16.9l-26.5-36L538.7 801.83333331l0 40.2z m-200.7-174l-1e-8 26.8L833.3 694.83333332l0-26.80000001L338 668.03333331z m147.2 66.9L806.6 734.93333331l0-26.7-321.3 0 0 26.7-0.1 0z m66.99999999 40.2L766.39999999 775.13333331 766.4 748.33333331l-214.2 0-1e-8 26.8z m240.90000001 13.3L346 788.43333331 217.4 641.33333331 900.2 641.33333331l-107.1 147.1z';
     var color = ['#a6c84c', '#ffa022', '#46bee9', '#a6c84c', '#ffa022', '#46bee9','#a6c84c', '#ffa022', '#46bee9','#a6c84c', '#ffa022', '#46bee9','#a6c84c', '#ffa022', '#46bee9','#a6c84c', '#ffa022', '#46bee9'];
     var series = [];
@@ -127,6 +128,7 @@ require([
             let m = {x: item[i].lon, y: item[i].lat};
             m = mercatorTolonlat(m);
             let date = new Date(item[i].time).toLocaleDateString();
+            console.log(item[i].words);
             maiye.push({
                 name: item[i].words,
                 value: [m.x, m.y, x, item[i].words, date]
@@ -290,6 +292,13 @@ require([
         backgroundColor: '#21202D',
         legend: {
             show: false,
+            // data: ser_time.map(function (item) {
+            //     return item.name;
+            // }),
+            // inactiveColor: '#777',
+            // textStyle: {
+            //     color: '#fff'
+            // }
         },
         grid:
             {
@@ -348,18 +357,13 @@ require([
 			overlay.initECharts(chartsContainer);
 			overlay.setOption(option);
 			layer_list.push(overlay);
+
 		});
 
 		let data_div = document.getElementById("dataZoom");
         let dataZoom = echarts4.init(data_div);
         dataZoom.setOption(option_time, true);
         dataZoom.on('click', function (params) {
-            console.log(params);
-        });
-        // 拖动时间轴后触发事件
-        dataZoom.on('datazoom', function (params) {
-            let s_date = dates[Math.round((params.start/100)*(dates.length-1))];
-            let e_date = dates[Math.round((params.end/100)*(dates.length-1))];
             console.log(params);
         });
 
@@ -376,6 +380,7 @@ require([
                 });
             });
         });
+
 	}
 
 	//2D,3D的转换按钮
